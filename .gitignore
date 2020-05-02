@@ -1,0 +1,15 @@
+*.pdf
+*.ai
+*.png
+*.aux
+*.DS_Store
+*.bbl
+*.bcf
+*.blg
+*.out
+*.gz
+*.log
+*.xml
+*.snm
+*.nav
+*.toc
