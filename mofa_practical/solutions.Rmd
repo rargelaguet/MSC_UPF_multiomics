@@ -1,0 +1,76 @@
+# Characterisation of Factor 3
+
+## Plot feature weights
+
+Following a similar strategy as for Factor 1, we notice that Factor 3 is also active in the somatic mutation view. Thus, there must be a mutation that underlies this phenotype. Let's plot the corresponding weights:
+```{r}
+plot_weights(MOFAobject, 
+  view = "Mutations", 
+  factor = 3, 
+  nfeatures = 10,
+  abs = F
+)
+```
+
+In this case we have two mutations that have large weight. One of them is the trisomy of chromosome 12, which is the [second most important clinical marker in CLL](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6058775/)!  
+
+## Plot Factor values
+
+Let's verify this by plotting the Factor values grouping samples by the presence or absence of trisomy12:
+```{r}
+plot_factor(MOFAobject, 
+  factors = 3, 
+  color_by = "trisomy12",
+  dodge = TRUE,
+  add_violin = TRUE
+)
+```
+
+## Plot molecular signatures in the input data
+
+Again, we can also inspect the molecular signatures in the input data with the functions `plot_data_scatter` and `plot_data_heatmap`:
+```{r}
+plot_data_scatter(MOFAobject, 
+  view = "Drugs",
+  factor = 3,  
+  features = 4,
+  sign = "positive",
+  color_by = "trisomy12"
+) + labs(y="Drug response (cell viability)")
+```
+
+```{r}
+plot_data_heatmap(MOFAobject, 
+  view = "mRNA",
+  factor = 3,  
+  features = 25,
+  denoise = TRUE,
+  cluster_rows = TRUE, cluster_cols = FALSE,
+  show_rownames = TRUE, show_colnames = FALSE,
+  scale = "row"
+)
+```
+
+
+
+
+
+
+
+# Characterisation of Factor 5
+
+Let's plot the GSEA results for Factor 5. It seems that this Factor is capturing differences in the stress response of the blood cells.
+```{r}
+plot_enrichment(res.positive, factor = 5, max.pathways = 15)
+```
+
+It is always advised to not rely only on the p-values and to visualise which genes are driving the enrichment within each pathways. There are problematic cases where a single gene is driving the enrichment results in very small pathways.
+```{r}
+plot_enrichment_detailed(
+  enrichment.results = res.positive,
+  factor = 5, 
+  feature.sets = reactomeGS, 
+  max.pathways = 3
+)
+```
+
