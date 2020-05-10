@@ -1,0 +1,16 @@
+https://github.com/bioFAM/MOFA2#installation
+
+# Python dependencies
+Python dependencies can be installed using pip:
+	pip install mofapy2
+
+# R package
+MOFA2 R package can be installed using:
+	remotes::install_github("bioFAM/MOFA2/MOFA2", build_opts = c("--no-resave-data --no-build-vignettes"))
+
+# Reticulate
+Importantly, MOFA requires [reticulate](https://rstudio.github.io/reticulate/) to communicate with Python, and this is the source of most of the installation problems.
+
+
+# Getting started vignette
+https://github.com/bioFAM/MOFA2/blob/master/MOFA2/vignettes/getting_started.md
