@@ -12,13 +12,15 @@ output:
   
 # Introduction
 
-This vignette displays how to use MOFA+ on the bulk multi-omics data set that was used in the [first publication of MOFA](https://msb.embopress.org/cgi/doi/10.15252/msb.20178124). It corresponds to the original [MOFA v1 vignette](https://bioconductor.org/packages/release/bioc/vignettes/MOFA/inst/doc/MOFA_example_CLL.html) upgraded to MOFA2 code.  
+This tutorial demonstrates how to use MOFA on the bulk multi-omics data set that was used in the [first publication of MOFA](https://msb.embopress.org/cgi/doi/10.15252/msb.20178124).  
+It corresponds to the original [MOFA v1 vignette](https://bioconductor.org/packages/release/bioc/vignettes/MOFA/inst/doc/MOFA_example_CLL.html) upgraded to MOFA2 code.  
 
-Briefly, the data set consists of N=200 samples from Chronic Lymphocytic Leukemia (CLL) patients where four omics were profiled from blood samples: DNA methylation (450K Illumina microarray), bulk RNA-seq, somatic mutations and drug response data from blood for N=200 patients with. The data set is explained in detail [in this article](https://www.jci.org/articles/view/93801) and is publicly available [here](http://bioconductor.org/packages/release/data/experiment/html/BloodCancerMultiOmics2017.html)
+Briefly, the data set consists of N=200 samples from Chronic Lymphocytic Leukemia (CLL) patients where four omics were profiled from blood samples: DNA methylation (450K Illumina microarray), bulk RNA-seq, somatic mutations and drug response data from blood for N=200 patients with. The data set was introduced in detail [in this article](https://www.jci.org/articles/view/93801) and can be downloaded [here](http://bioconductor.org/packages/release/data/experiment/html/BloodCancerMultiOmics2017.html)
 
 
 # Load libraries
 
+Make sure that you have installed the [MOFA2](https://github.com/bioFAM/MOFA2#installation) and the [MOFAdata](https://www.bioconductor.org/packages/release/data/experiment/html/MOFAdata.html) package. See the [installation instructions]() if you have questions
 ```{r, message=FALSE}
 library(knitr)
 library(MOFA2)
@@ -43,13 +45,14 @@ The mRNA expression has been normalised by library size, followed by a variance 
 hist(CLL_data$mRNA)
 ```
 
+As shown below, the mean is fairly uncorrelated from the variance, which is a requirement for the use of a Gaussian likelihood model in most statistical models
 ```{r}
 to.plot <- data.table(
   mean = rowMeans(CLL_data$mRNA,na.rm=T),
   sd = apply(CLL_data$mRNA,1,sd,na.rm=T)
 )
 
-ggplot(to.plot, aes(x=mean, y=variance)) + 
+ggplot(to.plot, aes(x=mean, y=sd)) + 
   geom_point() +
   stat_smooth(method="loess") +
   theme_classic()
@@ -66,7 +69,7 @@ hist(CLL_data$Methylation)
 ## Drug response 
 
 In this study they have measured the effect of relevant drugs *ex vivo* using a high-throughput assay. 
-For each drug they have measured 5 different concentrations from (XX_5 to XX_1, from lowest to highest). The value reported is the viability score (0=all cells died, 1=no cells died). 
+For each drug they have measured 5 different concentrations. The value reported is the viability score (0=all cells died, 1=no cells died). 
 ```{r}
 hist(CLL_data$Drugs)
 ```
@@ -109,7 +112,7 @@ Load sample metadata as a data.frame. Important columns are:
 ```{r}
 CLL_metadata <- fread("http://ftp.ebi.ac.uk/pub/databases/mofa/cll_vignette/sample_metadata.txt")
 
-head(CLL_metadata) %>% kable %>% kable_styling(bootstrap_options = c("striped", "hover"))
+head(CLL_metadata) %>% kable# %>% kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
 # Create the MOFA object and train the model
@@ -240,7 +243,7 @@ updated_features_names <- features_names(MOFAobject)
 Load drug metadata
 ```{r}
 drug_metadata <- fread("http://ftp.ebi.ac.uk/pub/databases/mofa/cll_vignette/drugs.txt.gz")
-head(drug_metadata) %>% kable %>% kable_styling(bootstrap_options = c("striped", "hover"))
+head(drug_metadata) %>% kable# %>% kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
 ```{r}
@@ -462,12 +465,16 @@ plot_data_heatmap(MOFAobject,
 
 # Prediction of individual markers for personalised treatment based on the patient's IGHV status
 
-**(Q) Can you suggest new RNA expression and DNA methylation markers for personalised treatment recommendations (depending on the IGHV status?** 
-First explore the MOFA weights, then go back to the input data and do boxplots using the chosen markers (x-axis being the IGHV status and y-axis being the marker's expression or methylation values). The section [Customized analysis](#customized-analysis) may be helpful.
+**(Q) Can you suggest new RNA expression and DNA methylation markers for personalised treatment recommendations (depending on the IGHV status)?**  
+First explore the MOFA weights, then go back to the input data and do boxplots for the chosen markers (x-axis being the IGHV status and y-axis being the marker's expression or DNA methylation values). 
+Hints: 
+- The section [Customized analysis](#customized-analysis) may be helpful to extract the weights and the data in a long data.frame format
+- the IGHV status for each sample can be fetched from the `CLL_metadata` object
+- the [ggpubr](http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/) package provides very useful ggplot-based visualisations, including [boxplots with p-values](http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/76-add-p-values-and-significance-levels-to-ggplots/). I highly recommend it!
 
 # Characterisation of Factor 3
 
-**(Q) Your task is to provide a characterisation for Factor 3**. 
+**(Q) Your task is to provide a characterisation for Factor 3**.  
 Try a similar pipeline as for Factor 1 and answer the following questions:
 - Which mutation underlies Factor 3?
 - Can you identify mRNA markers?
@@ -552,7 +559,7 @@ print(p)
 
 # Gene set enrichment analysis
 
-In addition to exploring the individual weights for each factor, we can use enrichment analysis to look for signiificant associations of factors to genesets. Here, we use the Reactome genesets for illustrations, which is contained in the `MOFAdata` package. For more details on how the GSEA works we encourage the users to read the [GSEA vignette](https://raw.githack.com/bioFAM/MOFA2/master/MOFA2/vignettes/GSEA.html)
+In addition to exploring the individual weights for each factor, we can use enrichment analysis to look for signiificant associations of factors to genesets. Here, we use the Reactome genesets for illustrations, which is contained in the [MOFAdata](https://www.bioconductor.org/packages/release/data/experiment/html/MOFAdata.html) package. For more details on how the GSEA works we encourage the users to read the [GSEA vignette](https://raw.githack.com/bioFAM/MOFA2/master/MOFA2/vignettes/GSEA.html)
 
 
 ## Load Reactome gene set annotations.  
@@ -614,7 +621,7 @@ plot_enrichment_heatmap(res.positive)
 plot_enrichment_heatmap(res.negative)
 ```
 
-**(Q) Can you characterise Factor 5 based on the GSEA results?**
+**(Q) Can you characterise Factor 5 based on the GSEA results?**  
 Hint: use the functions `plot_enrichment` and `plot_enrichment_detailed`.
 
 

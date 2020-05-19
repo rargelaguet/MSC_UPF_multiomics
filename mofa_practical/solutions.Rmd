@@ -1,4 +1,69 @@
-# Characterisation of Factor 3
+
+**(Q) Based on the MOFA output, if you were to profile just one molecular layer, which one would you choose to maximise the amount of sources of variation captured?**
+
+By inspecting the variance explained plot, we can see that the mRNA is capturing most of the sources of variation in this data set. There are only a few Factors that cannot be captured using the RNA information, for example Factors 2 and 14. Drug response is pretty useful as well, it captures most of the variation, except for Factor 4, 13 and 15. In contrast, DNA methylation data is only clearly active in Factor 1, 8 and 10. Somatic mutations are only useful for Factors 1 and 3.  
+If you were to profile just one molecular layer for a large number of patients in a cost-effective way, we would need to compare the costs of Drug response assays and RNA-sequencing. Probably the latter is much cheaper and more standarised in the community.
+
+**(Q) Can you suggest new RNA expression and DNA methylation markers for personalised treatment recommendations (depending on the IGHV status)?**  
+
+
+To answer this we can collect the genes with the largest weights for Factor 1
+
+mRNA
+```{r}
+plot_weights(MOFAobject, 
+  view = "mRNA", 
+  factor = 1, 
+  nfeatures = 15,
+  abs = F
+)
+```
+
+```{r}
+rna.weights <- get_weights(MOFAobject, 
+  views = "mRNA", 
+  factors = 1, 
+  abs = TRUE, 
+  as.data.frame = TRUE
+)
+
+top.genes <- rna.weights[order(rna.weights$value, decreasing = T),] %>% 
+  head(n=9) %>% .$feature %>% as.character
+
+head(top.genes)
+```
+
+```{r}
+rna.data <- get_data(MOFAobject, 
+  views = "mRNA", 
+  as.data.frame = TRUE,
+  features = list("mRNA"=top.genes)
+)
+head(rna.data)
+```
+
+Add IGHV status to the data.frame
+```{r}
+to.plot <- rna.data %>% 
+  merge(CLL_metadata[,c("sample","IGHV")], by="sample")
+colnames(to.plot)
+```
+
+Remove samples with unknown IGHV status
+```{r}
+to.plot <- to.plot[!is.na(to.plot$IGHV),]
+```
+
+```{r}
+ggpubr::ggboxplot(to.plot, x = "IGHV", y = "value", fill = "IGHV", facet="feature") +
+  stat_compare_means() +
+  labs(x="IGHV status", y="mRNA expression") +
+  theme(legend.position="none")
+```
+
+
+**(Q) Your task is to provide a characterisation for Factor 3**.  
+
 
 ## Plot feature weights
 
@@ -52,12 +117,12 @@ plot_data_heatmap(MOFAobject,
 ```
 
 
+**(Q) Why is this plot important for personalised medicine?**
+
+Because it classifies
 
 
-
-
-
-# Characterisation of Factor 5
+**(Q) Can you characterise Factor 5 based on the GSEA results?**  
 
 Let's plot the GSEA results for Factor 5. It seems that this Factor is capturing differences in the stress response of the blood cells.
 ```{r}
@@ -73,4 +138,8 @@ plot_enrichment_detailed(
   max.pathways = 3
 )
 ```
+
+
+**(Q) Which Factors are associated with the clinical covariate (time to next treatment)?**
+
 
