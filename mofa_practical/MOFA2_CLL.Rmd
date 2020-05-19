@@ -8,6 +8,7 @@ date: "`r Sys.Date()`"
 output:
   BiocStyle::html_document:
     toc: true
+    toc_depth: 2
 ---
   
 # Introduction
@@ -112,7 +113,7 @@ Load sample metadata as a data.frame. Important columns are:
 ```{r}
 CLL_metadata <- fread("http://ftp.ebi.ac.uk/pub/databases/mofa/cll_vignette/sample_metadata.txt")
 
-head(CLL_metadata) %>% kable# %>% kable_styling(bootstrap_options = c("striped", "hover"))
+head(CLL_metadata) %>% kable
 ```
 
 # Create the MOFA object and train the model
@@ -243,7 +244,7 @@ updated_features_names <- features_names(MOFAobject)
 Load drug metadata
 ```{r}
 drug_metadata <- fread("http://ftp.ebi.ac.uk/pub/databases/mofa/cll_vignette/drugs.txt.gz")
-head(drug_metadata) %>% kable# %>% kable_styling(bootstrap_options = c("striped", "hover"))
+head(drug_metadata) %>% kable
 ```
 
 ```{r}
@@ -500,7 +501,7 @@ p <- p +
 print(p)
 ```
 
-**(Q) Why is this plot important for personalised medicine?**
+**(Q) Why is the scatter plot of Factor 1 vs Factor 3 important for personalised medicine?**
 
 # Prediction of clinical subgroups
 
@@ -612,7 +613,7 @@ The enrichment analysis returns a list of 5 elements:
 names(res.positive)
 ```
 
-### Plot enrichment analysis results
+## Plot enrichment analysis results
 
 Plot an overview of the number of significant pathways per factor.  
 It seems that most of the Factors do not have clear gene set signatures. A clear exception is Factor 5, which has a very strong enrichment for genes with positive weights.
@@ -621,8 +622,11 @@ plot_enrichment_heatmap(res.positive)
 plot_enrichment_heatmap(res.negative)
 ```
 
-**(Q) Can you characterise Factor 5 based on the GSEA results?**  
+**(Q) Can you characterise Factor 5 based on the GSEA results? Which genes are driving the top enriched pathways?**  
 Hint: use the functions `plot_enrichment` and `plot_enrichment_detailed`.
+
+**(Q) Which drugs are associated with Factor 5? What is their target pathway? Do they make biological sense?**  
+Hint: use the `drug_metadata` object
 
 
 # Customized analysis
@@ -685,6 +689,7 @@ We can see that several factors have a significant association to time to treatm
 
 **(Q) Which Factors are associated with the clinical covariate (time to next treatment)?**
 
+Extract p-values and cox model coefficients (i.e. hazard ratios )
 ```{r}
 s <- summary(fit)
 coef <- s[["coefficients"]]
@@ -696,8 +701,11 @@ df <- data.frame(
   lower  = s[["conf.int"]][,"lower .95"], 
   higher = s[["conf.int"]][,"upper .95"]
 )
+```
 
-ggplot(df, aes(x=factor, y=coef, ymin=lower, ymax=higher)) +
+Plot the Hazard ratio per factor, together with 95% confidence intervals
+```{r}
+ggplot(df, aes(x=factor, y=coef, ymin=lower, ymax=higher, color=p<0.01)) +
   geom_pointrange() + 
   coord_flip() +
   scale_x_discrete() + 
@@ -705,6 +713,183 @@ ggplot(df, aes(x=factor, y=coef, ymin=lower, ymax=higher)) +
   geom_hline(aes(yintercept=1), linetype="dotted") +
   theme_bw()
 ```
+
+# Solutions
+
+### (Q) Based on the MOFA output, if you were to profile just one molecular layer, which one would you choose to maximise the amount of sources of variation captured?
+
+By inspecting the variance explained plot, we can see that the mRNA is capturing most of the sources of variation in this data set. There are only a few Factors that cannot be captured using the RNA information, for example Factors 2 and 14. Drug response is pretty useful as well, it captures most of the variation, except for Factor 4, 13 and 15. In contrast, DNA methylation data is only clearly active in Factor 1, 8 and 10. Somatic mutations are only useful for Factors 1 and 3.  
+If you were to profile just one molecular layer for a large number of patients in a cost-effective way, we would need to compare the costs of Drug response assays and RNA-sequencing. Probably the latter is much cheaper and more standarised in the community.
+
+
+### (Q) Can you suggest new RNA expression and DNA methylation markers for personalised treatment recommendations (depending on the IGHV status)?
+
+To answer this we can first collect the genes with the largest weights for Factor 1. Then we can do boxplots stratifying samples by IGHV status, followed by statiscal testing with the null hypothesis that the average gene expression does not differ between groups (a simple t-test should work).  
+
+Extract mRNA weights from the MOFAobject
+```{r}
+# Notice abs=TRUE as we do not distinguish between direction of effect
+rna.weights <- get_weights(MOFAobject, 
+  views = "mRNA", 
+  factors = 1, 
+  abs = TRUE, 
+  as.data.frame = TRUE
+)
+
+# Extract top N genes
+top.genes <- rna.weights %>%
+  .[order(rna.weights$value, decreasing = T),] %>% 
+  head(n=9) %>% .$feature %>% as.character
+head(top.genes)
+```
+
+Fetch mRNA data from the MOFAobject for the top genes
+```{r}
+rna.data <- get_data(MOFAobject, 
+  views = "mRNA", 
+  as.data.frame = TRUE,
+  features = list("mRNA"=top.genes)
+)
+head(rna.data)
+```
+
+Add IGHV status from the sample metadata
+```{r}
+to.plot <- rna.data %>% 
+  merge(CLL_metadata[,c("sample","IGHV")], by="sample")
+colnames(to.plot)
+```
+
+(Optional) Remove samples with unknown IGHV status
+```{r}
+to.plot <- to.plot[!is.na(to.plot$IGHV),]
+```
+
+Box plots with statistical comparison of means
+```{r}
+ggpubr::ggboxplot(to.plot, x = "IGHV", y = "value", fill = "IGHV", facet="feature") +
+  stat_compare_means() +
+  labs(x="IGHV status", y="mRNA expression") +
+  theme(legend.position="none")
+```
+
+
+### (Q) Your task is to provide a characterisation for Factor 3
+
+Following a similar strategy as for Factor 1, we notice that Factor 3 is also active in the somatic mutation view. Thus, there must be a mutation that underlies this phenotype. Let's plot the corresponding weights:
+```{r}
+plot_weights(MOFAobject, 
+  view = "Mutations", 
+  factor = 3, 
+  nfeatures = 5,
+  abs = F
+)
+```
+
+In this case we have two mutations that have large weight. One of them is the trisomy of chromosome 12, which is the [second most important clinical marker in CLL](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6058775/)!  
+
+Let's verify this by plotting the Factor values grouping samples by the presence or absence of trisomy12:
+```{r}
+plot_factor(MOFAobject, 
+  factors = 3, 
+  color_by = "trisomy12",
+  dodge = TRUE,
+  add_violin = TRUE
+)
+```
+
+As we did for the IGHV factor we can also inspect the molecular signatures in the input data with the functions `plot_data_scatter` and `plot_data_heatmap`:
+```{r}
+plot_data_scatter(MOFAobject, 
+  view = "Drugs",
+  factor = 3,  
+  features = 4,
+  sign = "positive",
+  color_by = "trisomy12"
+) + labs(y="Drug response (cell viability)")
+```
+
+```{r}
+plot_data_heatmap(MOFAobject, 
+  view = "mRNA",
+  factor = 3,  
+  features = 25,
+  denoise = TRUE,
+  cluster_rows = TRUE, cluster_cols = FALSE,
+  show_rownames = TRUE, show_colnames = FALSE,
+  scale = "row"
+)
+```
+
+
+### (Q) Why is the scatter plot of Factor 1 vs Factor 3 important for personalised medicine?
+
+Because it enbales us to classify samples based on their molecular (i.e. phenotypic) profile. Both Factor 1 and Factor 3 are associated to somatic mutations which have significant transcriptomic and epigenetic consequences which are in turn linked to a clinically-relevant impact on the response to different drugs (ex vivo). This is precisely the aim of personalised medicine! Obviously more research is needed, but the patients from the four subgroups are likely to require different drugs for an optimal treatment. 
+
+
+### (Q) Can you characterise Factor 5 based on the GSEA results?
+
+Plotting the GSEA results for Factor 5 reveals that this Factor is capturing differences in the stress response of the blood cells. We have significantly enriched pathways such as cellular response to stress or heat shock response.
+```{r}
+plot_enrichment(res.positive, factor = 5, max.pathways = 15)
+```
+
+It is always advised to not rely only on the p-values and to visualise which genes are driving the enrichment within each pathways. 
+```{r}
+plot_enrichment_detailed(
+  enrichment.results = res.positive,
+  factor = 5, 
+  feature.sets = reactomeGS, 
+  max.pathways = 3
+)
+```
+
+The top genes that are driving this pathway are Heat Shock Proteins and some inflammatory markers such as TNF.
+```{r}
+plot_weights(MOFAobject, 
+  view = "mRNA", 
+  factor = 5, 
+  nfeatures = 5
+)
+```
+
+It looks like these genes have a positive weight, which means that they have higher levels in the samples with positive Factor 5 values:
+```{r}
+plot_data_scatter(MOFAobject, 
+  factor = 5, 
+  view = "mRNA",
+  features = 6,
+  add_lm = TRUE
+) + labs(y="RNA expression")
+```
+
+### (Q) Which drugs are associated with Factor 5? What is their target pathway? Do they make biological sense?
+
+```{r}
+plot_top_weights(MOFAobject, 
+  view = "Drugs", 
+  factor = 5, 
+  nfeatures = 15
+)
+```
+
+```{r}
+plot_data_scatter(MOFAobject, 
+  view = "Drugs",
+  factor = 5, 
+  features = 6,
+  add_lm = TRUE
+) + labs(y="Viability")
+```
+
+Out of the 5 top drugs, the target category for 3 of them is Reactive Oxygen Species, which are closely related to stress response mechanisms.
+```{r}
+drug_metadata[grep("SD51|BAY|SD07|MIS-43|NU7441",drug_metadata$name),]
+```
+
+### (Q) Which Factors are associated with the clinical covariate (time to next treatment)
+
+- Factor 1 (as expected), Factor 2, 8 11 and 12 are all statistically associated with time to next treatment.
 
 # sessionInfo
 
