@@ -1,0 +1,113 @@
+- I am really sad I cannot give this lecutre in person, as this is the first time I do a lecture at the UPF, which is were i did my undergrad.
+But we are very lucky that Bioinformatics is one of those topics that can be taught online without major setbacks
+
+- I am going to talk about statistical methods for data integration. This has been the work of my PhD and it is one of the areas of bioinformatics that is receiveing more and more attention. The reason simply being that sequencing has never been as cheap as now, and the massive high-throughput of the experimetns. 
+
+- Mathematical content will be a bit higher than most of your lectures, so is very important that you ask if something is not clear. If you have taken the course Eleemnts of Mathematics, you should be fine with everything. If not, you will probably struggle a bit more, but even if you get stuck in the math, this should not impede you from getting the gist of the methods and doing the practical on Friday, which is probably the most important session
+
+--------------------
+
+-  I hardly need to justify why we are interested in multi-omics data. Most of the studies that have been published, and are being published are mostly restricted to one data modality, most commonly the genome or the transcriptome. But we know that cellular phenotypes result from a complex interaction between many molecular layers. To understand biology and to understand disease, we need to take a holistic view and try to integrate information from multiple sources of molecular info
+
+--------------------
+
+How can we do multi-omics data integration? 
+The first thing is to choose what we call a common coordnate framework, that is, the anchor for the different data modalities. 
+In some cases the anchor will be the samples, that means that we profile multiple omics from the same patient, from the tissue or from the same cell. This is what we call matched data sets.
+In other cases, and this is very common in single-cell sequencing, which is what I work on, is that meaasurements are not derived from the same sample or the same cell. So for example you have RNA expression for one cell and DNA methylation for another cell. And somehow you want to match these data sets. This is what we call unmatched data sets.
+
+In this lecture I will only talk about matched data sets, so when we have the samples as the common cordinate framework. Typically these are the most informative and what everyone is trying to aim at. 
+
+
+--------------------
+
+We have classified multi-mics methods depending on the input, let's classify them depending on the methodology. There are two classes of multi-omics data integration: what we call local strategies and global strategies
+
+
+--------------------
+
+Local stategies is aimed at testing for marginal associations between features from different molecular layers. You probably heard of GWAS or eQTL studies. The aim here is to associate the genetic variation of a single SNP to the expression of an individual gene in the case of eQTL or a specific phenotype in the case of GWAS.
+
+The way this is done by using generalised linear, which you should all be familiar with, they are among the most adopted statistical methods in almost every scientific field. The idea is that you have some predictors Y, some covariates g. You have to estimate the coefficients beta, the slope of the line. Then you do hypothesis testing on the value of beta, with the null hypothesis being that beta = 0, the alternative hypothesis being that beta !=0
+This term here, epsilon, is one of the most important terms in linear models and is not  explained in many courses. This is what we call the noise or the residuals, and its aim is to capture the variation that is NOT explained by the model. In realistic cases, it is impossible to fit a perfect line. This term is a random variable, it is not a fixed parameter, it has an underlying probability distribution. In the "standard" linear regression the noise has a mean of zero, noise is not directional. And some variance sigma, this sigma is inferred from the data, so more noisy data sets will have a larger value of sigma.
+
+TO-DO: ADD SLIDES GLM AND NOISE EPSILON
+
+
+--------------------
+
+Global analysis:
+
+--------------------
+
+Principal Component Analysis is the most popular technique for dimensionality reduction. It is the basis for all the extensions that deal with multi-omics data. Every bioinformatician needs to know how PCA works.
+
+(Q) How many of you have run a PCA
+(Q) How many of you could explain me how PCA works?
+
+Let's jump into the math. The aim of PCA is to do a linear mapping from a high-dimensional onto a low-dimensional space. This is done via a function F(X). How to define this function f(x) is what determines the differences between all the dimensionality reduction methods: probabilistic vs non-prob, linear vs non linear, 
+
+TO-DO: ADD F(X) SLIDE 
+
+	PCA can be thought of as a method to reveal the internal structure of the data in a way that best explains the variance in the data.\\ \leavevmode\newline
+
+--------------------
+
+How could we mathematically derive this algorithm? We want to find a matrix W such that the variance of Z (the projected data) is maximised.
+For simplicity we'll consider the projection to a single principal component. In this case we have a vector of length N, where N is the number of samples. What is the variance of this vector? 
+
+You can assume that the input data has a mean of zero, so we just centered each feature. 
+
+If you expand this term you can do some algebra and we can 
+
+This gives us the variance of the projected data in terms of w. This is the fucnction that we need to maximise. 
+
+Why we defined this covariance matrix S will become clear later.
+
+(Q) How do we maximise?
+
+
+--------------------
+
+What we have is not a single optimisation problem, but a constrained optimisation problem. Our constraint is that the vector w must have a fixed norm of 1. Some of you may have seen before how to maximised functions with constrain, but others won't know this, so I will not explain the math. The idea is to add what we call Lagrange multipliers to enforce the constraint. This is the function that we need to optimise
+
+This is why everyone needs to learn linear algebra in their undergrad, just to understand this result. If its not clear for you I really encourage that you read about this and I am happy to provide some recommendations, but I believe that every bioinformatician should be able to understand how PCA works and where it comes from.
+
+
+--------------------
+
+PCA is a purely algebraic method to summarise the data. It makes no assumptions regarding the data generation processes and no uncertainity quantification.
+Factor analysis is a probabilistic generalisation of PCA. It assumes the following underlying generative model:
+
+HIGHLGIHT THAT THIS IS THE SAME THING AS IN THE PREVIOUS LINAER MODEL, DIFFERENCEIS THAT Z ARE NOT KNOWN COVARIATES BUT THEY ARE LATENT VARIABLE THAT NEED TO BE INFERED BY THE MODEL
+
+--------------------
+
+	% Intuitively, the model is very similar to what PCA does, but here we have defined a generative probabilistic model.
+--------------------
+
+A common way of visualising probabilistic models that is very appealing is by the use of graphical models. Each node corresponds to a variable in the model. Grey nodes are observed variables whereas white nodes are unobserved variables.
+
+The plates in the background show the dimensions of each node. N = number of samples, D = number of features and K is the number of latent variables
+
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------
+--------------------

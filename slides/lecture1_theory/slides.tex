@@ -111,15 +111,16 @@
 	% \begin{frame}{Overview}
 	% \end{frame}
 
-	\begin{frame}{Why multi-omics?}
-	\centering
-	\includegraphics[height=6cm]{img/Ritchie2015_overview.png}\footcite{Ritchie2015}
-	\end{frame}
+	% \begin{frame}{Why multi-omics?}
+	% \centering
+	% \includegraphics[height=6cm]{img/Ritchie2015_overview.png}\footcite{Ritchie2015}
+	% \end{frame}
 	
 	\begin{frame}{Why multi-omics?}
-	The integrative analysis of diverse data modalities in a systems biology approach will capture better the molecular phenotypic varaition of biological systems
+	The integrative analysis of diverse data modalities in a systems biology approach will capture better the molecular phenotypic varaition of biological systems\\
+	\leavevmode\newline
 	\centering
-	\includegraphics[height=6cm]{img/Sun2016_multiomics.png}
+	\includegraphics[height=5.5cm]{img/Sun2016_multiomics.png}
 	\end{frame}
 
 	\begin{frame}{Strategies for multi-omics data integration}
@@ -130,14 +131,22 @@
 	\end{itemize}	
 	\end{frame}
 
-	\begin{frame}{Strategies for multi-omics data integration in \textit{matched} assays}
-	By having a common sample space, the aim of these methods is to discover and exploit associations within and between molecular layers. Broadly speaking, there are two types of integration strategies:
-	\centering
-	\includegraphics[height=6cm]{img/Ritchie2015_local_vs_global.png}
+	% \begin{frame}{Strategies for multi-omics data integration in \textit{matched} assays}
+	% By having a common sample space, the aim of these methods is to discover and exploit associations within and between molecular layers. Broadly speaking, there are two types of integration strategies:
+	% \centering
+	% \includegraphics[height=6cm]{img/Ritchie2015_local_vs_global.png}
+	% \end{frame}
+
+	\begin{frame}{Strategies for multi-omics data integration}
+	Two general strategies for the analysis of \textit{matched} assays:
+	\begin{itemize}
+		\item \textbf{Local analysis}: test for marginal associations between features from different molecular layers. Generally supervised.
+		\item \textbf{Global analysis}: exploit the dependencies between the features to construct a mathematical representation of the data. Generally unsupervised.
+	\end{itemize}	
 	\end{frame}
 
 	\begin{frame}{Local analysis}
-	The aim of local analysis is to test for marginal associations between features from different molecular layers. The most prominent example is quantitative trait loci mapping\\
+	The most prominent examples of local analysis are quantitative trait loci mapping (GWAS and eQTLs)\footcite{Ritchie2015}:\\
 	\leavevmode\newline
 	\centering
 	\includegraphics[height=5cm]{img/Ritchie2015_local_analysis.png}
@@ -145,20 +154,29 @@
 	\end{frame}
 
 	\begin{frame}{Local analysis}
-	Local analysis are typically done using (generalised) linear models
+	Local analysis is typically done using (generalised) linear models\\
+	\leavevmode\newline
 	\centering
 	\includegraphics[height=5.5cm]{img/gwas_eqtl.png}
 	\blfootnote{GWAS: Genome-Wide Association Study (GWAS)\\eQTL: expression Quantiative Trait Loci\\Slide by Anna Cuomo}
 	\end{frame}
 
-	\begin{frame}{Global analysis}
-	The aim of global analysis is to exploit the dependencies between the features, typically in an unsupervised setting, to construct a mathematical representation that captures the molecular heterogeneity between samples.\\
-	\leavevmode\newline
+	\begin{frame}{Local analysis}
 	\centering
-	\includegraphics[height=5cm]{img/Ritchie2015_global_analysis.png}
+	\includegraphics[height=7cm]{img/linear-regression.png}
 	\end{frame}
 
-	\begin{frame}{Global analysis: challenges in multi-omics data integration}
+
+
+	\begin{frame}{Global analysis}
+	Global analysis is more complex and contains multiple strategies\footcite{Ritchie2015}\\
+	\leavevmode\newline
+	\centering
+	\includegraphics[height=4.5cm]{img/Ritchie2015_global_analysis.png}
+	\end{frame}
+
+	\begin{frame}{Global analysis}
+	Challenges in (global) multi-omics data integration:
 	\begin{itemize}
 		\item Data collected using different techniques (i.e. data modalities) generally exhibit heterogeneous statistical properties
 		\item Large amounts (and different patterns) of missing values
@@ -168,25 +186,32 @@
 	\end{itemize}
 	\end{frame}
 
-	\begin{frame}{Latent variable models}
-	A key principle of biological data is that variation between the features is coordinated and results from the existence of underlying biological processes (for example gene regulatory networks). This key assumption sets off an entire statistical framework of exploiting the redundancy encoded in the data set to infer a meaningful low-dimensional repesentation of the data that captures as much signal as possible from the input data.
-	% Latent variable models (LVMs) are arguably the most successful approaches for biological data analysis.
-	\end{frame}
+	% \begin{frame}{Latent variable models}
+	% A key principle of biological data is that variation between the features is coordinated and results from the existence of underlying biological processes (for example gene regulatory networks). This key assumption sets off an entire statistical framework of exploiting the redundancy encoded in the data set to infer a meaningful low-dimensional repesentation of the data that captures as much signal as possible from the input data.
+	% % Latent variable models (LVMs) are arguably the most successful approaches for biological data analysis.
+	% \end{frame}
 
 	\begin{frame}{Latent variable models}
-	Given a dataset $\mathbf{Y}$ of $N$ samples and $D$ features, LVMs attempt to exploit the dependencies between the features by reducing the dimensionality of the data to a small set of $K$ latent variables.\\
-
-	The mapping between the low-dimensional space and the high-dimensional space is performed via a function $f(\bfY|\bTheta)$
-	% \centering
-	% \includegraphics[height=5cm]{img/latent_variable_models.png}
+	Given a dataset $\mathbf{Y}$ of $N$ samples and $D$ features, latent variable models exploit the dependencies between the features to reduce the dimensionality of the data to a small set of $K$ latent variables. The mapping from the high-dimensional to the low-dimensional space is performed via a function $f(\bfY|\bTheta)$:\\
+	\centering
+	\includegraphics[height=4cm]{img/latent_variable_models.png}
 	\end{frame}
+
+	\begin{frame}{Principal component analysis}
+	Principal Component Analysis (PCA) is the most popular technique for dimensionality reduction.\\
+	\centering
+	\includegraphics[height=4.5cm]{img/pca.jpeg}\\
+  	\tiny Credit to Raunak Joshi \par
+	\end{frame}
+
 
 	\begin{frame}{Principal component analysis (PCA)}
-	PCA is the most popular technique for dimensionality reduction \footcite{Hotelling1933,Ringner2008}.\\
-	It defines $f(\bfY|\bTheta)$ to be a linear mapping. Mathematically, the transformation is performed by a matrix $\bfW \in \R^{D \times K}$ that maps the observations $\bfY \in \R^{N \times D}$ onto the latent space $\bfZ \in \R^{N \times K}$.\\
-	PCA can be thought of as a method to reveal the internal structure of the data in a way that best explains the variance in the data.\\ \leavevmode\newline
+	PCA defines $f(\bfY|\bTheta)$ to be a linear transformation via a matrix $\bfW \in \R^{D \times K}$ that maps the observations $\bfY \in \R^{N \times D}$ onto the latent space $\bfZ \in \R^{N \times K}$.\\
+	\leavevmode\newline
 	\centering
-	\includegraphics[height=2.8cm]{img/pca_overview.pdf}
+	\includegraphics[height=5.25cm]{img/matrix_factorisation.png}
+	% \centering
+	% \includegraphics[height=2.8cm]{img/pca_overview.pdf}
 	% \[
 	% 	\mathbf{Z} = \mathbf{Y}\mathbf{W}
 	% \]
@@ -194,24 +219,29 @@
 	% The matrix $\bfW \in \R^{D \times K}$ contains the feature weights (i.e. the gene scores)
 	\end{frame}
 
-	\begin{frame}{Principal component analysis}
-	\centering
-	\includegraphics[height=6cm]{img/pca.jpeg}\\
-  	\tiny Credit to Raunak Joshi \par
+	% \begin{frame}{Principal component analysis (PCA)}
+	% \end{frame}
+
+	\begin{frame}{Mathematical derivation of PCA: maximum variance formulation}
+	The aim in PCA is to infer the matrix $\bfW$ such that the variance of $\bfZ$ (the projected data) is maximised. If we consider a single latent dimension, the variance of the projected data is:
+	\begin{align*}
+		\sigma^2 &= \frac{1}{N}\sum_{n=1}^{N} (\bfz_n - \hat{\bfz})^{2} \\
+				 &= \frac{1}{N}\sum_{n=1}^{N} (\bfy_n^T \bfw - \hat{\bfy}^T\bfw)^{2}
+	\end{align*}
+	where $\hat{\bfy}$ is a vector with the feature-wise means. If we center the data this simplifies to:
+	\begin{equation*}
+		\sigma^2 = \frac{1}{N}\sum_{n=1}^{N} (\bfy_n^T \bfw)^{2}
+	\end{equation*}
 	\end{frame}
 
 	\begin{frame}{Mathematical derivation of PCA: maximum variance formulation}
-	The aim in PCA is to infer a matrix $\bfW$ such that the variance of $\bfZ$ (the projected data) is maximised.\\
-	If we consider a single latent dimension, the variance of the projected data is:
-	\begin{equation*}
-		\sigma^2 = \frac{1}{N}\sum_{n=1}^{N} (\bfz_n - \hat{\bfz})^{2} = \frac{1}{N}\sum_{n=1}^{N} (\bfy_n \bfw - \hat{\bfy}\bfw)^{2}
-	\end{equation*}
-	where $\hat{\bfy}$ is a vector with the feature-wise means.\\
-	\leavevmode\newline
-	This can be written in a more compact form by defining $\bfS \in \R^{D \times D}$ as the data covariance matrix: $\bfS = \frac{1}{N}\sum_{n=1}^{N} (\bfy_n - \hat{\bfy})(\bfy_n - \hat{\bfy})^T$: %Note that if the data is centered this is equal to $\bfS = \bfY \bfY^T. Thus:
-	\[
-		\sigma^2 = \frac{1}{N}\sum_{n=1}^{N} (\bfw \bfS \bfw)
-	\]
+	A bit of algebra allows us to define this equation in terms of the (centered) data covariance matrix: $\bfS = \frac{1}{N}\sum_{n=1}^{N} \bfy_n\bfy_n^T$:
+	\begin{align*}
+		\sigma^2 &= \frac{1}{N}\sum_{n=1}^{N} (\bfy_n^T \bfw)^T (\bfy_n^T \bfw) \\
+		=& (\bfw^T \bfy_n) (\bfy_n^T \bfw) \\
+		=& \bfw^T (\bfy_n \bfy_n^T) \bfw \\
+		=& \bfw^T \bfS \bfw
+	\end{align*}
 	\end{frame}
 
 	\begin{frame}{Mathematical derivation of PCA: maximum variance formulation}
@@ -219,9 +249,9 @@
 	\[
 		\hat{\bfw} = \argmax_{\bfw} \bfw^T \bfS \bfw
 	\]
-	where we have removed any term that is constant and does not affect the optimisation.\\
+	% where we have removed any term that is constant and does not affect the optimisation.\\
 	\leavevmode\newline
-	\textbf{(Q) Maximising this expression does not work, we need a constraint. Why?}
+	\textbf{(Q) Maximising this expression does not work, we need a constrain. Why?}
 	% (Solution) The weights need to be constraint to have a constant norm (one, arbritrarily), otherwise maximizing the expression above would simply lead to the weight vector having infinite norm, as this leads to an infinite variance.
 	\end{frame}
 
@@ -234,7 +264,7 @@
 	\[
 		\bfw^T \bfS \bfw + \lambda (1-\bfw^T\bfw)
 	\]
-	By setting the derivative w.r.t. $\bfw$ to zero, we obtain the following equation:
+	By setting the derivative $\frac{\partial \sigma}{\partial \bfw}$ to zero, we obtain the following equation:
 	\[
 		\bfS \bfw = \lambda \bfw
 	\]
@@ -244,12 +274,12 @@
 	\begin{frame}{Mathematical derivation of PCA: maximum variance formulation}
 	Among all possible orthonormal basis, the one that maximises the projected variance corresponds to the basis defined by the eigenvectors of the covariance matrix $\bfS$. It These vector basis are called the principal components.\\
 	\leavevmode\newline
-	The corresponding eigenvalue $\lambda$ corresponds to the variance $\sigma$ (proof in the appendix).\\
-	\leavevmode\newline
-	To obtain the low-dimensional representation of the data we just need to multiply each data point $\bfy_n$ by $\bfw$:
-	\[
-		z_n = \bfy_n^T \bfw 
-	\]
+	The corresponding eigenvalue $\lambda$ corresponds to the variance $\sigma$ (proof in the appendix).
+	% \leavevmode\newline
+	% To obtain the low-dimensional representation of the data we just need to multiply each data point $\bfy_n$ by $\bfw$:
+	% \[
+	% 	z_n = \bfy_n^T \bfw 
+	% \]
 	\end{frame}
 
 	% \begin{frame}{Mathematical derivation of PCA: maximum variance formulation}
@@ -338,17 +368,17 @@
 		\item Does not generalise to an arbitrary number of data modalities.
 		\item No natural way to combine different data modalities (binary data with continuous data).
 		\item Cannot handle missing values.
-		\item Non-sparse loadings: challenges in interpretability and risk of overfitting.
+		% \item Non-sparse loadings: challenges in interpretability and risk of overfitting.
 	\end{itemize}
 	\end{frame}
 
 	\begin{frame}{Probabilistic PCA and Factor analysis}
 	PCA is a purely algebraic method to summarise the data. It makes no assumptions regarding the data generation processes and no uncertainity quantification.\\
-	Factor analysis is a probabilistic generalisation of PCA. It assumes the following underlying generative model:
+	Factor analysis is a probabilistic generalisation of PCA:
 	\[
 		\bfY = \bfW \bfZ + \bepsilon
 	\]
-	where the weights $\bfW \in \R^{D \times K}$ are assumed to be non-probabilistic parameters, but the noise $\bepsilon  \in \R^{D \times 1}$ and the latent variables $\bfZ \in \R^{N \times K}$ are assumed to follow an isotropic normal prior distribution:
+	where the weights $\bfW \in \R^{D \times K}$ are assumed to be non-probabilistic parameters, but the noise $\epsilon$ and the latent variables $\bfZ \in \R^{N \times K}$ are normally-distributed random variables:
 	\begin{align*}
 		p(\bfZ) = \prod_{n=1}^{N} \prod_{k=1}^{K} \Ndist{z_{nk}}{0,1} \quad  
 		p(\epsilon) = \Ndist {\epsilon}{0,\sigma^{2}}
@@ -356,12 +386,11 @@
 	\end{frame}
 
 	\begin{frame}{Factor analysis}
-	All together, this leads to a normally-distributed likelihood:
+	All together, this leads to a normal distributed for the observations:
 	\[
 		p(\bfY|\bfW,\bfZ,\sigma) = \prod_{n=1}^{N} \prod_{d=1}^{D} \Ndist{y_{n,d}}{\bfw_{k}^T \bfz_{n},\sigma^2 \I}
 	\]
-	This will correspond to the objective function that needs to be maximised when training the model.\\ \leavevmode\newline
-	% Intuitively, the model is very similar to what PCA does, but here we have defined a generative probabilistic model.
+	This is called the likelihood and it corresponds to the objective function that needs to be maximised when training the model (maximum likelihood estimation should ring a bell).
 	\end{frame}
 
 	\begin{frame}{Graphical model for factor analysis}

@@ -10,7 +10,7 @@ output:
     toc: true
     toc_depth: 2
 ---
-  
+
 # Introduction
 
 This tutorial demonstrates how to use MOFA on the bulk multi-omics data set that was used in the [first publication of MOFA](https://msb.embopress.org/cgi/doi/10.15252/msb.20178124).  
