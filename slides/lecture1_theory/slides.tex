@@ -162,17 +162,25 @@
 	\end{frame}
 
 	\begin{frame}{Local analysis}
+	\leavevmode\newline
 	\centering
-	\includegraphics[height=7cm]{img/linear-regression.png}
+	\includegraphics[height=6cm]{img/linear-regression.png}
 	\end{frame}
 
 
 
 	\begin{frame}{Global analysis}
-	Global analysis is more complex and contains multiple strategies\footcite{Ritchie2015}\\
+	In global analysis the aim is to exploit the relationship between all features to create useful mathematical representations\footcite{Ritchie2015}\\
 	\leavevmode\newline
 	\centering
 	\includegraphics[height=4.5cm]{img/Ritchie2015_global_analysis.png}
+	\end{frame}
+
+
+	\begin{frame}{Global analysis}
+	\leavevmode\newline
+	\centering
+	\includegraphics[height=6cm]{img/george_box_model.png}
 	\end{frame}
 
 	\begin{frame}{Global analysis}
@@ -193,14 +201,16 @@
 
 	\begin{frame}{Latent variable models}
 	Given a dataset $\mathbf{Y}$ of $N$ samples and $D$ features, latent variable models exploit the dependencies between the features to reduce the dimensionality of the data to a small set of $K$ latent variables. The mapping from the high-dimensional to the low-dimensional space is performed via a function $f(\bfY|\bTheta)$:\\
+	\leavevmode\newline
 	\centering
 	\includegraphics[height=4cm]{img/latent_variable_models.png}
 	\end{frame}
 
-	\begin{frame}{Principal component analysis}
+	\begin{frame}{Principal component analysis (PCA)}
 	Principal Component Analysis (PCA) is the most popular technique for dimensionality reduction.\\
+	\leavevmode\newline
 	\centering
-	\includegraphics[height=4.5cm]{img/pca.jpeg}\\
+	\includegraphics[height=4.75cm]{img/pca.jpeg}\\
   	\tiny Credit to Raunak Joshi \par
 	\end{frame}
 
@@ -223,7 +233,7 @@
 	% \end{frame}
 
 	\begin{frame}{Mathematical derivation of PCA: maximum variance formulation}
-	The aim in PCA is to infer the matrix $\bfW$ such that the variance of $\bfZ$ (the projected data) is maximised. If we consider a single latent dimension, the variance of the projected data is:
+	The aim in PCA is to infer the matrix $\bfW$ such that the variance of $\bfZ$ (the projected data) is maximised. If we consider a single latent factor, the variance of the projected data is:
 	\begin{align*}
 		\sigma^2 &= \frac{1}{N}\sum_{n=1}^{N} (\bfz_n - \hat{\bfz})^{2} \\
 				 &= \frac{1}{N}\sum_{n=1}^{N} (\bfy_n^T \bfw - \hat{\bfy}^T\bfw)^{2}
@@ -272,7 +282,7 @@
 	\end{frame}
 
 	\begin{frame}{Mathematical derivation of PCA: maximum variance formulation}
-	Among all possible orthonormal basis, the one that maximises the projected variance corresponds to the basis defined by the eigenvectors of the covariance matrix $\bfS$. It These vector basis are called the principal components.\\
+	Among all possible orthonormal basis, the one that maximises the projected variance corresponds to the basis defined by the eigenvectors of the covariance matrix $\bfS$. These vector basis are called the principal components.\\
 	\leavevmode\newline
 	The corresponding eigenvalue $\lambda$ corresponds to the variance $\sigma$ (proof in the appendix).
 	% \leavevmode\newline
@@ -310,10 +320,10 @@
 	\[
 		\hat{\bfY} = \bfY - \sum_{k=1}^{K} (\bfz_k \bfw_k^T)
 	\]
-	and repeating the procedure above using the reconstructed data $\hat{\bfY}$ as input:
-	\[
-		\hat{\bfw_k} = \argmax_{\|\bfw_k\|=1} \bfw_{k}^{T} \bfS_k \bfw_k
-	\]
+	and repeating the procedure above using the reconstructed covariance matrix $\hat{\bfS}$ as input
+	% \[
+	% 	\hat{\bfw_k} = \argmax_{\|\bfw_k\|=1} \bfw_{k}^{T} \hat{\bfS_k} \bfw_k
+	% \]
 	% \centering
 	% \includegraphics[height=3cm]{img/pca_reconstruction.png}
 	% \blfootnote{Figure by Alex Williams} %http://alexhwilliams.info/itsneuronalblog/2016/03/27/pca/
@@ -378,19 +388,20 @@
 	\[
 		\bfY = \bfW \bfZ + \bepsilon
 	\]
-	where the weights $\bfW \in \R^{D \times K}$ are assumed to be non-probabilistic parameters, but the noise $\epsilon$ and the latent variables $\bfZ \in \R^{N \times K}$ are normally-distributed random variables:
+	where the weights $\bfW \in \R^{D \times K}$ are assumed to be non-probabilistic parameters, but the noise $\epsilon \in \R^{1 \times 1}$ and the latent variables $\bfZ \in \R^{N \times K}$ are normally-distributed random variables:
 	\begin{align*}
-		p(\bfZ) = \prod_{n=1}^{N} \prod_{k=1}^{K} \Ndist{z_{nk}}{0,1} \quad  
-		p(\epsilon) = \Ndist {\epsilon}{0,\sigma^{2}}
+		p(\bfZ) &= \prod_{n=1}^{N} \prod_{k=1}^{K} \Ndist{z_{nk}}{0,1} \\
+		\\
+		p(\epsilon) &= \Ndist {\epsilon}{0,\sigma^{2}}
 	\end{align*}
 	\end{frame}
 
 	\begin{frame}{Factor analysis}
 	All together, this leads to a normal distributed for the observations:
 	\[
-		p(\bfY|\bfW,\bfZ,\sigma) = \prod_{n=1}^{N} \prod_{d=1}^{D} \Ndist{y_{n,d}}{\bfw_{k}^T \bfz_{n},\sigma^2 \I}
+		p(\bfY|\bfW,\bfZ,\sigma) = \prod_{n=1}^{N} \prod_{d=1}^{D} \Ndist{y_{n,d}}{\bfw_{k}^T \bfz_{n},\sigma^2}
 	\]
-	This is called the likelihood and it corresponds to the objective function that needs to be maximised when training the model (maximum likelihood estimation should ring a bell).
+	This is called the likelihood and it corresponds to the objective function that needs to be maximised when training the model.
 	\end{frame}
 
 	\begin{frame}{Graphical model for factor analysis}
@@ -415,16 +426,19 @@
 	\end{frame}
 
 	\begin{frame}{Probabilistic canonical correlation analysis}
-	As we have done with PCA, CCA can also be formulated as a probabilistic generative model \footcite{Bach2005}. The two matrix of observations $\bfY^{1}$ and $\bfY^{2}$ are decomposed in terms of two weight matrices $\bfW^{1}$ and $\bfW^{2}$ but a joint latent matrix $\bfZ$:
-	\[
-		\bfY^{m} = \bfW^{m} \bfZ + \epsilon^{m}
-	\]
-	where $m$ is the index for the views $(M=2)$.\\
-	\leavevmode\newline
-	The weights and the variance of the noise are assumed to be non-probabilistic parameters. We specify the following probability distributions for the latent variables and the noise:
+	CCA can also be formulated as a probabilistic generative model \footcite{Bach2005}. The two matrix of observations $\bfY^{1}$ and $\bfY^{2}$ are decomposed in terms of two weight matrices $\bfW^{1}$ and $\bfW^{2}$ but a joint latent matrix $\bfZ$:
 	\begin{align*}
-		p(z_{nk}) &= \Ndist{z_{nk}}{0,1}\\
-		p(\epsilon^{m}) &= \Ndist{\epsilon^{m}}{0,\sigma_{m}^2}
+		\bfY^{1} = \bfW^{1} \bfZ + \epsilon^{1} \qquad 
+		\bfY^{2} = \bfW^{2} \bfZ + \epsilon^{2}
+	\end{align*}
+	The weights are assumed to be non-probabilistic parameters. We specify the following probability distributions for the latent variables:
+	\begin{align*}
+		p(z_{nk}) &= \Ndist{z_{nk}}{0,1}
+	\end{align*}
+	The noise for each data modality is also defined as a normal distribution:
+	\begin{align*}
+		p(\epsilon^{1}) = \Ndist{\epsilon^{1}}{0,\sigma_{1}^2} \qquad 
+		p(\epsilon^{2}) = \Ndist{\epsilon^{2}}{0,\sigma_{2}^2}
 	\end{align*}
 	\end{frame}
 

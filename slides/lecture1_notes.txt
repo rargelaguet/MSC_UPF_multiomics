@@ -36,18 +36,27 @@ TO-DO: ADD SLIDES GLM AND NOISE EPSILON
 
 --------------------
 
-Global analysis:
+In global analysis the aim is to exploit the relationship between all features to create useful mathematical representation. What does useful mean? Useful means if it helps you solving the problem you are facing, that's it. This is the most important statement in data science: all models that you use are wrong, they are simplifications of complexity. There are no right or wrong models, but some of them will be useful for your specific task. A model that is bad for one purpose may be excellent for another purpose, and the other way around.
+
+tends to be more complex than local methods, and there is a myriad of strategies that can be adopted.
+- One could concatenate the data by using the fact that the samples (the rwos) are the same
+- One could transform each data set into a mathematical representation that can be compared across the modalities, followed by the creation of a common model
+- One could fit a separate model to each data set, a linear model above, and then combine the output into a common model.
+
+---------------------
+
+Latent variable smodels
+
+This is done via a function F(X). How to define this function f(x) is what determines the differences between all the dimensionality reduction methods: probabilistic vs non-prob, linear vs non linear, 
 
 --------------------
 
-Principal Component Analysis is the most popular technique for dimensionality reduction. It is the basis for all the extensions that deal with multi-omics data. Every bioinformatician needs to know how PCA works.
+Principal Component Analysis is the most popular technique for dimensionality reduction. It is the basis for most of the global methods that integrate multi-omics data. Every bioinformatician needs to know how PCA works.
 
 (Q) How many of you have run a PCA
 (Q) How many of you could explain me how PCA works?
 
-Let's jump into the math. The aim of PCA is to do a linear mapping from a high-dimensional onto a low-dimensional space. This is done via a function F(X). How to define this function f(x) is what determines the differences between all the dimensionality reduction methods: probabilistic vs non-prob, linear vs non linear, 
-
-TO-DO: ADD F(X) SLIDE 
+Let's jump into the math. The aim of PCA is to do a linear mapping from a high-dimensional onto a low-dimensional space. 
 
 	PCA can be thought of as a method to reveal the internal structure of the data in a way that best explains the variance in the data.\\ \leavevmode\newline
 
