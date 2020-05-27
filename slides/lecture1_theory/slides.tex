@@ -272,13 +272,13 @@
 	\]
 	It can be solved by introducing a Lagrange multiplier $\lambda$ to enforce the constraint:
 	\[
-		\bfw^T \bfS \bfw + \lambda (1-\bfw^T\bfw)
+		f(\bfW,\lambda) = \bfw^T \bfS \bfw + \lambda (1-\bfw^T\bfw)
 	\]
-	By setting the derivative $\frac{\partial \sigma}{\partial \bfw}$ to zero, we obtain the following equation:
+	By setting the derivative $\frac{\partial f(\bfW,\lambda)}{\partial \bfw}$ to zero, we obtain the following equation:
 	\[
 		\bfS \bfw = \lambda \bfw
 	\]
-	which should be familiar (perhaps in this form $\bfA \bfv = \lambda \bfv$)!
+	which should be familiar (perhaps in this form $\bfA \bfv = \lambda \bfv$)?
 	\end{frame}
 
 	\begin{frame}{Mathematical derivation of PCA: maximum variance formulation}

@@ -152,69 +152,7 @@ ggscatter(to.plot, x="pc_value", y="sepal_length", facet="PC", scales="free",
   )
 ```
 
-<!-- # Questions -->
+# Questions
 
-<!-- ## (Q) What happens to the Principal Components (the sample scores) if you add a constant term to one of the variables? and what if you scale one of the variables by 100x? and to the feature loadings? Should we scale the data before PCA? -->
-
-<!-- (ANSWER) Differences in mean (i.e. constant intercept) make no difference in PCA, as the method only exploits the patterns of covariation. Remember that the input to PCA is the covariance matrix, where the effect of means have been removed. This is why the data is always centered when runnng PCA. -->
-
-<!-- Scaling does make a difference in PCA. Features with larger variance dominate the covariance matrix and hence tend to contribute more to the principal components. Data should be scaled when the differences in variance between the features are not considered biologically meaningful. In this case, if width and length were measured in different units then standarisation to unit variance would be a good idea. -->
-
-<!-- ```{r} -->
-<!-- Y <- iris[-5] %>% as.matrix -->
-
-<!-- # Add constant -->
-<!-- Y.scaled[,1] <- 10*Y.scaled[,1] -->
-
-<!-- # Sxale -->
-<!-- Y.scaled[,1] <- Y.scaled[,1] + 1 -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- colMeans(Y) -->
-<!-- colMeans(Y.scaled) -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- apply(Y,2,sd) -->
-<!-- apply(Y.scaled,2,sd) -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- pca.original <- prcomp(Y) -->
-<!-- pca.scaled <- prcomp(Y.scaled) -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- df.original <- pca.original$x %>%  -->
-<!--   as.data.frame %>% -->
-<!--   mutate(sample=as.character(1:N)) %>% -->
-<!--   mutate(type="original") %>% -->
-<!--   pivot_longer(cols=starts_with("PC"), names_to = "PC", values_to = "value") -->
-
-<!-- df.scaled <- pca.scaled$x %>%  -->
-<!--   as.data.frame %>% -->
-<!--   mutate(sample=as.character(1:N)) %>% -->
-<!--   mutate(type="scaled") %>% -->
-<!--   pivot_longer(cols=starts_with("PC"), names_to = "PC", values_to = "value") -->
-
-<!-- df <- rbind(df.original, df.scaled) %>% -->
-<!--   pivot_wider(id_cols=c("sample","PC"), names_from="type", values_from="value") -->
-
-
-<!-- ggscatter(df, x="original", y="scaled", facet="PC") + -->
-<!--   labs(x="Original value", y="Scaled value") + -->
-<!--   geom_abline(slope=1, intercept=0) + -->
-<!--   theme( -->
-<!--     legend.position = "right", -->
-<!--     axis.text = element_text(size=rel(0.8)) -->
-<!--   ) -->
-<!-- ``` -->
-
-<!-- <!-- Many machine learning models and algorithms require data to be standarized, usually by centering the features to zero-mean and optionally scaling them to unit variance. Whether and how to standarize your data is not a straight-forward answer and it depends on what your aim is, on what method you are using and what your data looks like. --> 
-
-<!-- <!-- As a general rule, PCA tries to capture as much variability as possible in the data, so the features with high variability will explain more fraction of the total variance than features with low variability. In some ocasions this is what we want, for example, if we have gene expression data we want the more variable genes (usually the differentialy expressed genes) to contribute more than the genes which are expressed in constant levels (housekeeping genes). --> 
-
-<!-- <!-- However, there are cases where some features have more variance because of technical reasons, for example if the scale of the variables is different (centimeters vs meters). In this case, we need to standarise the data to unit variance, otherwise the features in centimetres will have higher scale and will contribute more to the total variance. Regarding feature centering, PCA is invariant to linear transformations of the data, so adding constant terms to the variables do not affect the output. However, it is common practice and always recommended to center the data. -->
-
-
+- **(Q) Why are the feature means not important when doing PCA (i.e. why is the data centered)?**  
+- **(Q) Does the PCA solution change if you scale the features with `scale(center=TRUE, scale=TRUE)`?**
