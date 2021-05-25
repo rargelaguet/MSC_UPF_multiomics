@@ -1,5 +1,5 @@
 ---
-title: "Applying MOFA+ to the Chronic Lymphocytic Leukemia cohort"
+title: "Applying MOFA to the Chronic Lymphocytic Leukemia cohort"
 author: 
   name: "Ricard Argelaguet and Britta Velten"
   affiliation: "European Bioinformatics Institute, Cambridge, UK"
@@ -11,28 +11,19 @@ output:
     toc_depth: 2
 ---
 
-SUGGESTIONS:
-- START FROM THE TRAIN MOFA OBJECT IF LESS THAN 2H WORKSHOP
-- DON'T ACCESS SLOTS WITH @
-
 # Introduction
 
-This tutorial demonstrates how to use MOFA on the bulk multi-omics data set that was used in the [first publication of MOFA](https://msb.embopress.org/cgi/doi/10.15252/msb.20178124).  
-It corresponds to the original [MOFA v1 vignette](https://bioconductor.org/packages/release/bioc/vignettes/MOFA/inst/doc/MOFA_example_CLL.html) upgraded to MOFA2 code.  
-
-Briefly, the data set consists of N=200 samples from Chronic Lymphocytic Leukemia (CLL) patients where four omics were profiled from blood samples: DNA methylation (450K Illumina microarray), bulk RNA-seq, somatic mutations and drug response data from blood for N=200 patients with. The data set was introduced in detail [in this article](https://www.jci.org/articles/view/93801) and can be downloaded [here](http://bioconductor.org/packages/release/data/experiment/html/BloodCancerMultiOmics2017.html)
-
+The data set consists of N=200 samples from a cohort of Chronic Lymphocytic Leukemia (CLL) patients where four omics were profiled from blood samples: DNA methylation (450K Illumina microarray), bulk RNA-seq, somatic mutations and drug response data from blood for N=200 patients with. The data set was introduced in detail [in this article](https://www.jci.org/articles/view/93801) and can be downloaded [here](http://bioconductor.org/packages/release/data/experiment/html/BloodCancerMultiOmics2017.html). The MOFA analysis was originally published [here](https://msb.embopress.org/cgi/doi/10.15252/msb.20178124)
 
 # Load libraries
 
-Make sure that you have installed the [MOFA2](https://github.com/bioFAM/MOFA2#installation) and the [MOFAdata](https://www.bioconductor.org/packages/release/data/experiment/html/MOFAdata.html) package. See the [installation instructions]() if you have questions
+Make sure that you have installed the [MOFA2](https://github.com/bioFAM/MOFA2#installation) and the [MOFAdata](https://www.bioconductor.org/packages/release/data/experiment/html/MOFAdata.html) package.
 ```{r, message=FALSE}
-library(knitr)
-library(MOFA2)
-library(MOFAdata)
 library(data.table)
 library(ggplot2)
 library(tidyverse)
+library(MOFA2)
+library(MOFAdata)
 ```
 
 # Load data 
@@ -45,35 +36,21 @@ lapply(CLL_data,dim)
 
 ## mRNA expression
 
-The mRNA expression has been normalised by library size, followed by a variance stabilizing transformation using [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html)
+The mRNA expression has been normalised by library size, followed by a variance stabilizing transformation using [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html):
 ```{r}
 hist(CLL_data$mRNA)
 ```
 
-As shown below, the mean is fairly uncorrelated from the variance, which is a requirement for the use of a Gaussian likelihood model in most statistical models
-```{r}
-to.plot <- data.table(
-  mean = rowMeans(CLL_data$mRNA,na.rm=T),
-  sd = apply(CLL_data$mRNA,1,sd,na.rm=T)
-)
-
-ggplot(to.plot, aes(x=mean, y=sd)) + 
-  geom_point() +
-  stat_smooth(method="loess") +
-  theme_classic()
-```
-
 ## DNA methylation
 
-DNA methylation is calculated for every CpG site using the [M-value](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-587), which provides a better summary statistic for downstream analysis.  
-Notice that we use only the top 1% (N=4248) most variable sites.
+DNA methylation is calculated for every CpG site using the [M-value](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-11-587), which provides a better summary statistic for downstream analysis. For the MOFA analysis we selected the top 1% (N=4248) most variable sites.
 ```{r}
 hist(CLL_data$Methylation)
 ```
 
 ## Drug response 
 
-In this study they have measured the effect of relevant drugs *ex vivo* using a high-throughput assay. 
+In this study the authors have measured the effect of multiple drugs *ex vivo* using a high-throughput platform. 
 For each drug they have measured 5 different concentrations. The value reported is the viability score (0=all cells died, 1=no cells died). 
 ```{r}
 hist(CLL_data$Drugs)
@@ -81,27 +58,10 @@ hist(CLL_data$Drugs)
 
 ## Somatic mutations
 
-Mutations are assessed in a panel of common cancer mutations and are summarised in a binary format:
+Mutations are assessed using a panel of common cancer mutations and are summarised in a binary format (0=no mutation, 1=mutaton):
 ```{r}
 table(CLL_data$Mutations)
 ```
-
-Notice that most mutations are not frequent and we will likely not have enough power to do good statistical inference with them:
-```{r}
-to.plot <- data.table(
-  mutation = rownames(CLL_data$Mutations),
-  frequency = rowMeans(CLL_data$Mutations,na.rm=T)
-)
-
-ggplot(to.plot, aes(x=reorder(mutation,-frequency), y=frequency)) + 
-  geom_bar(stat = "identity") +
-  theme_classic() + 
-  labs(x="", y="Frequency") +
-  theme(
-    axis.text.x = element_text(colour="black",size=rel(0.7), angle=90, hjust=1, vjust=0.5),  
-  )
-```
-
 
 ## Sample metadata 
 
@@ -117,7 +77,7 @@ Load sample metadata as a data.frame. Important columns are:
 ```{r}
 CLL_metadata <- fread("http://ftp.ebi.ac.uk/pub/databases/mofa/cll_vignette/sample_metadata.txt")
 
-head(CLL_metadata) %>% kable
+head(CLL_metadata) %>% knitr::kable(.)
 ```
 
 # Create the MOFA object and train the model
@@ -125,12 +85,8 @@ head(CLL_metadata) %>% kable
 Create the MOFA object
 ```{r message=FALSE}
 MOFAobject <- create_mofa(CLL_data)
-```
-
-```{r}
 MOFAobject
 ```
-
 
 ## Plot data overview
 
@@ -141,171 +97,86 @@ plot_data_overview(MOFAobject)
 
 ## Define MOFA options
 
-### Data options
-
-Important arguments:
-
-- **scale_views**: scale views to the same total variance? Default is `FALSE`
-- **views**: views names
-
-```{r}
-data_opts <- get_default_data_options(MOFAobject)
-data_opts
-```
-
 ### Model options
 
-Important arguments:
+Two important options:
 
 - **num_factors**: number of factors
-- **likelihoods**: likelihood per view (options are "gaussian", "poisson", "bernoulli"). By default they are inferred automatically.
+- **likelihoods**: likelihood per view (options are "gaussian", "poisson", "bernoulli"). By default the "gaussian" distribution is used. When having binary data, as is the case for Somatic mutations, one should change the likelihood to "bernoulli":
 ```{r}
 model_opts <- get_default_model_options(MOFAobject)
+
+model_opts$likelihoods["Mutations"] <- "bernoulli"
+
 model_opts$num_factors <- 15
 
 model_opts
 ```
 
-### Training options
-
-Important arguments:
-
-- **convergence_mode**: "fast", "medium" (default), "slow". For exploration, the fast mode is good enough.
-- **seed**: random seed
-
-```{r}
-train_opts <- get_default_training_options(MOFAobject)
-train_opts$convergence_mode <- "medium"
-train_opts$seed <- 42
-
-train_opts
-```
 
 ## Train the MOFA model
 
 Prepare the MOFA object
 ```{r, message=FALSE}
 MOFAobject <- prepare_mofa(MOFAobject,
-  data_options = data_opts,
-  model_options = model_opts,
-  training_options = train_opts
+  model_options = model_opts
 )
 ```
 
 
-Train the model: this should take ~5min
+Train the model: this should take ~5min, but DO NOT RUN THIS. The software has evolved since the original publication and the results will not be 100% identical to the original publication, please load the pretrained model below for reproducibility purposes
 ```{r, message=FALSE, warning=FALSE}
-# NOTE: The software has evolved since the original publication and the results will not be 100% identical to the original publication, please use the pretrained model if you are running through the vignette for the fist time
-# MOFAobject <- run_mofa(MOFAobject, outfile="/Users/ricard/Downloads/MOFA2_CLL.hdf5")
-# saveRDS(MOFAobject,"MOFA2_CLL.rds")
+# MOFAobject <- run_mofa(MOFAobject)
+```
 
-# Load precomputed model
+Load precomputed model
+```{r}
 MOFAobject <- readRDS(url("http://ftp.ebi.ac.uk/pub/databases/mofa/cll_vignette/MOFA2_CLL.rds"))
 ```
-
-
-# Overview of the trained MOFA model
-
-## Slots
-
-The MOFA object consists of multiple slots where relevant data and information is stored. For descriptions, you can read the documentation using `?MOFA`. The most important slots are:  
-
-- **data**: input data used to train the model (features are centered at zero mean)
-- **samples_metadata**: sample metadata information
-- **expectations**: expectations of the posterior distributions for the weights (W) and the factors (Z)
-
-```{r}
-slotNames(MOFAobject)
-```
-
-Data:
-```{r}
-names(MOFAobject@data)
-dim(MOFAobject@data$Drugs$group1)
-```
-
-Factor and Weight values (expectations of the posterior distributions):
-```{r}
-names(MOFAobject@expectations)
-
-# Dimensionality of the factor matrix: 200 samples, 15 factors
-dim(MOFAobject@expectations$Z[[1]])
-
-# Dimensionality of the mRNA Weight matrix: 5000 features, 15 factors
-dim(MOFAobject@expectations$W$Mutations)
-```
-
-## [Optional] Rename features 
-
-```{r}
-updated_features_names <- features_names(MOFAobject)
-```
-
-### Rename Drugs
-
-Load drug metadata
-```{r}
-drug_metadata <- fread("http://ftp.ebi.ac.uk/pub/databases/mofa/cll_vignette/drugs.txt.gz")
-head(drug_metadata) %>% kable
-```
-
-```{r}
-tmp <- drug_metadata$name; names(tmp) <- drug_metadata$drug_id
-updated_features_names[["Drugs"]] <- stringr::str_replace_all(features_names(MOFAobject)[["Drugs"]], tmp)
-```
-
-### Rename mRNA from ENSEMBLE IDs to gene names
-
-Notice that the genes in the input data are encoded as ENSEMBL IDs:
-```{r}
-head(features_names(MOFAobject)[["mRNA"]])
-```
-
-Keep the model with the ENSEMBL IDs for the [gene set enrichment analysis section](#gene-set-enrichment-analysis)
-```{r}
-MOFAobject.ensembl <- MOFAobject
-```
-
-Load gene metadata
-```{r}
-gene_metadata <- fread("http://ftp.ebi.ac.uk/pub/databases/mofa/cll_vignette/Hsapiens_genes_BioMart.87.txt.gz")
-gene_metadata[,symbol:=ifelse(symbol=="",ens_id,symbol)]
-
-tmp <- gene_metadata$symbol; names(tmp) <- gene_metadata$ens_id
-```
-
-Rename and avoid duplicated names with the Mutations view
-```{r echo=FALSE, message=FALSE}
-tmp[tmp%in%features_names(MOFAobject)[["Mutations"]]] <- paste0(tmp[tmp%in%features_names(MOFAobject)[["Mutations"]]],"_mRNA")
-updated_features_names[["mRNA"]] <- stringr::str_replace_all(features_names(MOFAobject)[["mRNA"]], tmp)
-```
-
-## Update features names in model
-
-```{r}
-features_names(MOFAobject) <- updated_features_names
-```
-
 
 ## Add sample metadata to the model
 
 The sample metadata must be provided as a data.frame and it must contain a column `sample` with the sample IDs. Make sure that the samples in the metadata match the samples in the model
 ```{r}
+stopifnot(CLL_metadata$sample %in% samples_metadata(MOFAobject)$sample)
+
 samples_metadata(MOFAobject) <- CLL_metadata
 ```
 
-## Correlation between factors
+## Rename features (just run and ignore the code)
 
-A good sanity check is to verify that the Factors are largely uncorrelated. In MOFA there are no orthogonality constraints such as in Principal Component Analysis, but if there is a lot of correlation between Factors this suggests a poor model fit. Reasons? Perhaps you used too many factors or perhaps the normalisation is not adequate.
+Keep the model with the original variable names for the [gene set enrichment analysis section](#gene-set-enrichment-analysis)
 ```{r}
-plot_factor_cor(MOFAobject)
+MOFAobject.ensembl <- MOFAobject
 ```
 
-## Plot variance decomposition
+```{r}
+updated_features_names <- features_names(MOFAobject)
+
+# Rename drug IDs (i.e. D_001) to drug names (i.e. navitoclax)
+drug_metadata <- fread("http://ftp.ebi.ac.uk/pub/databases/mofa/cll_vignette/drugs.txt.gz")
+tmp <- drug_metadata$name; names(tmp) <- drug_metadata$drug_id
+updated_features_names[["Drugs"]] <- stringr::str_replace_all(features_names(MOFAobject)[["Drugs"]], tmp)
+
+# Rename mRNA from ENSEMBLE IDs (i.e. ENSG00000223972) to gene names (i.e. DDX11L1)
+gene_metadata <- fread("http://ftp.ebi.ac.uk/pub/databases/mofa/cll_vignette/Hsapiens_genes_BioMart.87.txt.gz")
+gene_metadata[,symbol:=ifelse(symbol=="",ens_id,symbol)]
+tmp <- gene_metadata$symbol; names(tmp) <- gene_metadata$ens_id
+
+# avoid duplicated names with the Mutations view
+tmp[tmp%in%features_names(MOFAobject)[["Mutations"]]] <- paste0(tmp[tmp%in%features_names(MOFAobject)[["Mutations"]]],"_mRNA")
+updated_features_names[["mRNA"]] <- stringr::str_replace_all(features_names(MOFAobject)[["mRNA"]], tmp)
+
+# Update features names in model
+features_names(MOFAobject) <- updated_features_names
+```
+
+
+## Variance decomposition analysis
 
 ### Variance decomposition by Factor 
 
-**The most important insight that MOFA generates is the variance decomposition analysis**. This plot shows the percentage of variance explained by each factor across each data modality (and group, if provided). It summarises the sources of variation from a complex heterogeneous data set in a single figure.  
+**The most important insight that MOFA generates is the variance decomposition analysis**. This plot shows the percentage of variance explained by each factor across each data modality.
 
 ```{r}
 plot_variance_explained(MOFAobject, max_r2=10)
@@ -336,28 +207,28 @@ Let's test the association between the MOFA factors versus Gender and age:
 ```{r}
 correlate_factors_with_covariates(MOFAobject, 
   covariates = c("Gender","age","died"), 
-  plot="log_pval"
+  plot = "log_pval"
 )
 ```
 
 Most Factors don't have a clear association with any of the covariates. Only Factor 11 has a (weak) association with survival outcome. We will explore association with clinical measurements later in the vignette.
 
-## Plot factor values
+## Inspection of factor values
 
 **How do we interpret the factor values?**  
 Each factor captures a different source of variability in the data. Mathematically, each Factor is defined by a linear combination of the input features. Each Factor ordinates cells along a one-dimensional axis that is centered at zero. Samples with different signs manifest opposite phenotypes along the inferred axis of variation, with higher absolute value indicating a stronger effect.  
 Note that the interpretation of MOFA factors is analogous to the interpretation of the principal components in PCA.
 
 ```{r}
-plot_factor(MOFAobject, 
-  factors = 1, 
-  color_by = "SEPT10"
+plot_factors(MOFAobject, 
+  factors = c(1,3), 
+  dot_size = 2.5
 )
 ```
 
-## Plot feature weights
+## Inspection of feature weights
 
-**How do we interpret the weights?**  
+**How do we interpret the feature weights?**  
 The weights provide a score for each feature on each factor. Features with no association with the corresponding factor are expected to have values close to zero, whereas features with strong association with the factor are expected to have large absolute values. The sign of the weights indicates the direction of the effect: a positive weights indicates that the feature has higher levels in the cells with positive factor values, and vice-versa.  
 
 ### Plot feature weights for somatic mutations
@@ -384,7 +255,6 @@ plot_top_weights(MOFAobject,
  scale = T           # Scale weights from -1 to 1
 )
 ```
-
 
 IGHV has a positve weight. This means that samples with positive Factor 1 values have the IGHV mutation whereas samples with negative Factor 1 values do not have the IGHV mutation. To confirm this, let's plot the Factor values and colour the IGHV mutation status.  
 ```{r}
@@ -469,7 +339,7 @@ plot_data_heatmap(MOFAobject,
 
 # Prediction of individual markers for personalised treatment based on the patient's IGHV status
 
-**(Q) Can you suggest new RNA expression and DNA methylation markers for personalised treatment recommendations (depending on the IGHV status)?**  
+**(Q) Can you suggest new RNA expression and DNA methylation markers for personalised treatment recommendations according to Factor 1 (the IGHV status)?**  
 First explore the MOFA weights, then go back to the input data and do boxplots for the chosen markers (x-axis being the IGHV status and y-axis being the marker's expression or DNA methylation values). 
 Hints: 
 - The section [Customized analysis](#customized-analysis) may be helpful to extract the weights and the data in a long data.frame format
@@ -479,14 +349,15 @@ Hints:
 # Characterisation of Factor 3
 
 **(Q) Your task is to provide a characterisation for Factor 3**.  
-Try a similar pipeline as for Factor 1 and answer the following questions:
-- Which mutation underlies Factor 3?
-- Can you identify mRNA markers?
-- Do a (small) bibliographical search to check if your predictions make sense
+
+Try a similar pipeline as for Factor 1 and answer the following questions:  
+- Which mutation underlies Factor 3?  
+- Can you identify mRNA markers?  
+- Do a (small) bibliographical search to check if your predictions make sense  
 
 # Inspection of combinations of Factors
 
-Now that we have characterised the etiology of the two main Factors, let's explore them together:
+Now that we have characterised the etiology of the two main Factors, let's do a scatterplot colouring each patient by their somatic mutation profile:
 ```{r}
 p <- plot_factors(MOFAobject, 
   factors = c(1,3), 
@@ -503,8 +374,6 @@ p <- p +
 print(p)
 ```
 
-**(Q) Why is the scatter plot of Factor 1 vs Factor 3 important for personalised medicine?**
-
 # Prediction of clinical subgroups
 
 The scatterplot of Factor 1 vs Factor 3 reveals that a few samples are missing the somatic mutation status. In this case, the doctors were not able to classify patients into their clinical subgroups. But we can now use MOFA to exploit the molecular profiles and attempt to impute the IGHV and trisomy12 status.
@@ -517,28 +386,28 @@ library(randomForest)
 # Prepare data
 df <- as.data.frame(get_factors(MOFAobject, factors=c(1,2))[[1]])
 
-# Train the model for IGHV
-df$IGHV <- as.factor(MOFAobject@samples_metadata$IGHV)
-model.ighv <- randomForest(IGHV ~ ., data=df[!is.na(df$IGHV),], ntree=10)
-df$IGHV <- NULL
+# Train the model for IGHV after removing missing observations
+df$IGHV <- as.factor(samples_metadata(MOFAobject)$IGHV)
+model.ighv <- randomForest(IGHV ~ ., data=df[!is.na(df$IGHV),])
 
 # Do predictions
-MOFAobject@samples_metadata$IGHV.pred <- stats::predict(model.ighv, df)
+samples_metadata(MOFAobject)$IGHV.pred <- stats::predict(model.ighv, df)
 ```
 
 ```{r}
-# Train the model for Trisomy12
-df$trisomy12 <- as.factor(MOFAobject@samples_metadata$trisomy12)
-model.trisomy12 <- randomForest(trisomy12 ~ ., data=df[!is.na(df$trisomy12),], ntree=10)
-df$trisomy12 <- NULL
+# Prepare data
+df <- as.data.frame(get_factors(MOFAobject, factors=c(1,2))[[1]])
 
-MOFAobject@samples_metadata$trisomy12.pred <- stats::predict(model.trisomy12, df)
+# Train the model for Trisomy12 after removing missing observations
+df$trisomy12 <- as.factor(samples_metadata(MOFAobject)$trisomy12)
+model.trisomy12 <- randomForest(trisomy12 ~ ., data=df[!is.na(df$trisomy12),])
+
+samples_metadata(MOFAobject)$trisomy12.pred <- stats::predict(model.trisomy12, df)
 ```
-
 
 Plot predictions for IGHV
 ```{r}
-MOFAobject@samples_metadata$IGHV.pred_logical <- c("True","Predicted")[as.numeric(is.na(MOFAobject@samples_metadata$IGHV))+1]
+samples_metadata(MOFAobject)$IGHV.pred_logical <- c("True","Predicted")[as.numeric(is.na(samples_metadata(MOFAobject)$IGHV))+1]
 
 p <- plot_factors(MOFAobject, 
   factors = c(1,3), 
@@ -554,11 +423,6 @@ p <- p +
 
 print(p)
 ```
-
-<!-- Clinicians were not able to classify patients XXX in a specific disease subgroup using clinical markers. Could you use the molecular data to find the most similar and provide clinical recommendations?  -->
-<!-- The plot above indicates that there are a few outlier samples that are interesting to explore. In particular, we have cases where the patient is predicted to be IGHV+ but its molecular profiles (i.e. its value in the latent representation) disagrees. Why? -->
-<!-- This analysis shows that for the majority of patients the molecular classification and the mutation-based classification agrees, but for a few cases they do not... -->
-
 
 # Gene set enrichment analysis
 
@@ -584,21 +448,13 @@ These are the steps for doing [Gene Set Enrichment Analysis (GSEA) with MOFA](ht
 - **(2) Select a gene set statistic**: the statistic used to quantify the scores at the pathway level. Must be one of the following: `mean.diff` (difference in the average weight between foreground and background genes) or `rank.sum` (difference in the sum of ranks between foreground and background genes).  
 - **(3) Select a statistical test**: the statistical test used to compute the significance of the gene set statistics under a competitive null hypothesis. Must be one of the following: `parametric` (a simple and very liberal parametric t-test), `cor.adj.parametric` (parametric t-test adjusted by the correlation between features), `permutation` (unparametric, the null distribution is created by permuting the weights. This option is computationally expensive, but it preserves the correlation structure between features in the data.).  
 
-An important consideration when running GSEA is that MOFA contains positive and negative weights. There will be cases where the genes with negative weights all belong to a specific pathway but genes with positive weights belong to other pathways. If this is true, doing GSEA with all of them together could dilute the signal. Hence, we recommend the user to do GSEA separately for (+) and (-) weights, and possibly also jointly with all weights.  
-
 ```{r message=FALSE}
-# GSEA on positive weights, with default options
-res.positive <- run_enrichment(MOFAobject.ensembl, 
-  feature.sets = reactomeGS, 
+enrichment.results <- run_enrichment(
+  object = MOFAobject.ensembl, 
   view = "mRNA",
-  sign = "positive"
-)
-
-# GSEA on negative weights, with default options
-res.negative <- run_enrichment(MOFAobject.ensembl, 
   feature.sets = reactomeGS, 
-  view = "mRNA",
-  sign = "negative"
+  set.statistic = "mean.diff",
+  statistical.test = "parametric"
 )
 ```
 
@@ -612,7 +468,7 @@ The enrichment analysis returns a list of 5 elements:
 - **sigPathways**: list with significant pathways per factor at a specified FDR threshold  
 
 ```{r}
-names(res.positive)
+names(enrichment.results)
 ```
 
 ## Plot enrichment analysis results
@@ -620,20 +476,18 @@ names(res.positive)
 Plot an overview of the number of significant pathways per factor.  
 It seems that most of the Factors do not have clear gene set signatures. A clear exception is Factor 5, which has a very strong enrichment for genes with positive weights.
 ```{r}
-plot_enrichment_heatmap(res.positive)
-plot_enrichment_heatmap(res.negative)
+plot_enrichment_heatmap(enrichment.results)
 ```
 
 **(Q) Can you characterise Factor 5 based on the GSEA results? Which genes are driving the top enriched pathways?**  
-Hint: use the functions `plot_enrichment` and `plot_enrichment_detailed`.
+Hint: use the functions `plot_enrichment`
 
 **(Q) Which drugs are associated with Factor 5? What is their target pathway? Do they make biological sense?**  
 Hint: use the `drug_metadata` object
 
-
 # Customized analysis
 
-For customized exploration of weights and factors, you can directly fetch the variables from the model using 'get' functions: `get_weights`, `get_factors` and `get_data`:
+For customized exploration of weights and factors, you can directly fetch the variables from the model using `get_weights` and `get_factors`:
 ```{r}
 weights <- get_weights(MOFAobject, 
   views = "all", 
@@ -650,15 +504,6 @@ factors <- get_factors(MOFAobject,
 )
 head(factors)
 ```
-
-```{r}
-data <- get_data(MOFAobject, 
-  views = "all", 
-  as.data.frame = TRUE
-)
-head(data)
-```
-
 
 # Building predictive models of clinical outcome
 
@@ -679,7 +524,7 @@ library(survminer)
 ```
 
 ```{r}
-SurvObject <- Surv(MOFAobject@samples_metadata$TTT, MOFAobject@samples_metadata$treatedAfter)
+SurvObject <- Surv(samples_metadata(MOFAobject)$TTT, samples_metadata(MOFAobject)$treatedAfter)
 Z <- get_factors(MOFAobject)[[1]]
 fit <- coxph(SurvObject ~ Z) 
 fit
@@ -715,3 +560,183 @@ ggplot(df, aes(x=factor, y=coef, ymin=lower, ymax=higher, color=p<0.01)) +
   geom_hline(aes(yintercept=1), linetype="dotted") +
   theme_bw()
 ```
+
+
+# Solutions
+
+### (Q) Based on the MOFA output, if you were to profile just one molecular layer, which one would you choose to maximise the amount of sources of variation captured?
+
+By inspecting the variance explained plot, we can see that the RNA expression is capturing most of the sources of variation in this data set. There are only a few Factors that cannot be captured using RNA expression ( for example Factors 2 and 14). The *ex vivo* drug response assay also captures a lot of variability, but it is much harder to obtain from patient cohorts than RNA expression data. The other two data modalities are less informative: DNA methylation data is only active in Factor 1, 8 and 10 and Somatic mutations are only associated with Factors 1 and 3.  
+
+If were were to profile just one molecular layer for a large number of patients in a cost-effective way, we would need to compare the feasibility and costs of Drug response assays and RNA sequencing. The latter is much cheaper and more standarised in the community.
+
+### (Q) Can you suggest new RNA expression and DNA methylation markers for personalised treatment recommendations according to Factor 1 (the IGHV status)?  
+
+We first collect the genes with the largest weights for Factor 1. Then we can do boxplots stratifying samples by IGHV status, followed by statiscal testing with the null hypothesis that the average gene expression does not differ between groups (a simple t-test should work for a first exploration).  
+
+Extract mRNA weights from the MOFA object
+```{r}
+
+rna.weights <- get_weights(MOFAobject, 
+  views = "mRNA", 
+  factors = 1, 
+  abs = TRUE,  # we do not distinguish between direction of effect
+  as.data.frame = TRUE
+)
+
+# Extract top N genes
+top.genes <- rna.weights %>%
+  .[order(rna.weights$value, decreasing = T),] %>% 
+  head(n=9) %>% .$feature %>% as.character
+head(top.genes)
+```
+
+Fetch mRNA data from the MOFAobject for the top genes
+```{r}
+rna.data <- get_data(MOFAobject, 
+  views = "mRNA", 
+  as.data.frame = TRUE,
+  features = list("mRNA"=top.genes)
+)
+head(rna.data)
+```
+
+Add IGHV status from the sample metadata
+```{r}
+to.plot <- rna.data %>% 
+  merge(CLL_metadata[,c("sample","IGHV")], by="sample")
+colnames(to.plot)
+```
+
+(Optional) Remove samples with unknown IGHV status
+```{r}
+to.plot <- to.plot[!is.na(to.plot$IGHV),]
+```
+
+Box plots with statistical comparison of means
+```{r}
+ggpubr::ggboxplot(to.plot, x = "IGHV", y = "value", fill = "IGHV", facet="feature") +
+  stat_compare_means() +
+  labs(x="IGHV status", y="mRNA expression") +
+  theme(legend.position="none")
+```
+
+
+### (Q) Provide a characterisation for Factor 3
+
+Following a similar strategy as for Factor 1, we notice that Factor 3 is also active in the somatic mutation view. Thus, there must be a mutation that underlies this phenotype. Let's plot the corresponding weights:
+```{r}
+plot_weights(MOFAobject, 
+  view = "Mutations", 
+  factor = 3, 
+  nfeatures = 5,
+  abs = F
+)
+```
+
+In this case we have two mutations that have large weight. One of them is the trisomy of chromosome 12, which is the [second most important clinical marker in CLL](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6058775/)!  
+
+Let's verify this by plotting the Factor values grouping samples by the presence or absence of trisomy12:
+```{r}
+plot_factor(MOFAobject, 
+  factors = 3, 
+  color_by = "trisomy12",
+  dodge = TRUE,
+  add_violin = TRUE
+)
+```
+
+As we did for the IGHV factor we can also inspect the molecular signatures in the input data with the functions `plot_data_scatter` and `plot_data_heatmap`:
+```{r}
+plot_data_scatter(MOFAobject, 
+  view = "Drugs",
+  factor = 3,  
+  features = 4,
+  sign = "positive",
+  color_by = "trisomy12"
+) + labs(y="Drug response (cell viability)")
+```
+
+```{r}
+plot_data_heatmap(MOFAobject, 
+  view = "mRNA",
+  factor = 3,  
+  features = 25,
+  denoise = TRUE,
+  cluster_rows = TRUE, cluster_cols = FALSE,
+  show_rownames = TRUE, show_colnames = FALSE,
+  scale = "row"
+)
+```
+
+
+### (Q) Why is the scatter plot of Factor 1 vs Factor 3 important for personalised medicine?
+
+Because it enables us to classify samples based on their molecular (i.e. phenotypic) profile. Both Factor 1 and Factor 3 are associated to somatic mutations which have significant transcriptomic and epigenetic consequences which are in turn linked to a clinically-relevant impact on the response to different drugs (ex vivo). This is precisely the aim of personalised medicine! Obviously more research is needed, but the patients from the four subgroups are likely to require different drugs for an optimal treatment. 
+
+
+### (Q) Characterise Factor 5 based on the GSEA results?
+
+Plotting the GSEA results for Factor 5 reveals that this Factor is capturing differences in the stress response of the blood cells. We have significantly enriched pathways such as cellular response to stress or heat shock response.
+```{r}
+plot_enrichment(enrichment.results, factor = 5, max.pathways = 15)
+```
+
+The top genes that are driving this pathway are Heat Shock Proteins and some inflammatory markers such as TNF.
+```{r}
+plot_top_weights(MOFAobject, 
+  view = "mRNA", 
+  factor = 5, 
+  nfeatures = 15
+)
+```
+
+It looks like these genes have a positive weight, which means that they have higher levels in the samples with positive Factor 5 values:
+```{r}
+plot_data_scatter(MOFAobject, 
+  factor = 5, 
+  view = "mRNA",
+  features = 6,
+  add_lm = TRUE
+) + labs(y="RNA expression")
+```
+
+### (Q) Which drugs are associated with Factor 5? What is their target pathway? Do they make biological sense?
+
+```{r}
+plot_top_weights(MOFAobject, 
+  view = "Drugs", 
+  factor = 5, 
+  nfeatures = 15
+)
+```
+
+```{r}
+plot_data_scatter(MOFAobject, 
+  view = "Drugs",
+  factor = 5, 
+  features = 6,
+  add_lm = TRUE
+) + labs(y="Viability")
+```
+
+Out of the 5 top drugs, the target category for 3 of them is Reactive Oxygen Species, which are closely related to stress response mechanisms.
+```{r}
+drug_metadata[grep("SD51|BAY|SD07|MIS-43|NU7441",drug_metadata$name),]
+```
+
+### (Q) Which Factors are associated with the clinical covariate (time to next treatment)
+
+Factor 1 (as expected), Factor 2, 8 11 and 12 are all statistically associated with time to next treatment.
+
+
+# sessionInfo
+
+<details>
+  <summary>**Session Info**</summary>
+  
+```{r}
+sessionInfo()
+```
+
+</details>
