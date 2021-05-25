@@ -1,5 +1,6 @@
 *.jpeg
-*.pdf
+*.key
+# *.pdf
 *.ai
 *.png
 *.aux
