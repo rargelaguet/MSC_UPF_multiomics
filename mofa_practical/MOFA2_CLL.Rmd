@@ -11,6 +11,10 @@ output:
     toc_depth: 2
 ---
 
+SUGGESTIONS:
+- START FROM THE TRAIN MOFA OBJECT IF LESS THAN 2H WORKSHOP
+- DON'T ACCESS SLOTS WITH @
+
 # Introduction
 
 This tutorial demonstrates how to use MOFA on the bulk multi-omics data set that was used in the [first publication of MOFA](https://msb.embopress.org/cgi/doi/10.15252/msb.20178124).  
@@ -141,10 +145,8 @@ plot_data_overview(MOFAobject)
 
 Important arguments:
 
-- **scale_groups**: scale groups to the same total variance? Default is `FALSE`
 - **scale_views**: scale views to the same total variance? Default is `FALSE`
 - **views**: views names
-- **groups**: groups names
 
 ```{r}
 data_opts <- get_default_data_options(MOFAobject)
@@ -227,10 +229,10 @@ Factor and Weight values (expectations of the posterior distributions):
 names(MOFAobject@expectations)
 
 # Dimensionality of the factor matrix: 200 samples, 15 factors
-dim(MOFAobject@expectations$Z$group1)
+dim(MOFAobject@expectations$Z[[1]])
 
 # Dimensionality of the mRNA Weight matrix: 5000 features, 15 factors
-dim(MOFAobject@expectations$W$mRNA)
+dim(MOFAobject@expectations$W$Mutations)
 ```
 
 ## [Optional] Rename features 
@@ -343,12 +345,13 @@ Most Factors don't have a clear association with any of the covariates. Only Fac
 ## Plot factor values
 
 **How do we interpret the factor values?**  
-Each factor captures a different source of variability in the data. Mathematically, each Factor is defined by a linear combination of the input features. As the data is centered prior to running MOFA, each Factor ordinates cells along a one-dimensional axis that is centered at zero. Samples with different signs manifest opposite phenotypes along the inferred axis of variation, with higher absolute value indicating a stronger effect. Note that the interpretation of MOFA factors is analogous to the interpretation of the principal components in PCA.
+Each factor captures a different source of variability in the data. Mathematically, each Factor is defined by a linear combination of the input features. Each Factor ordinates cells along a one-dimensional axis that is centered at zero. Samples with different signs manifest opposite phenotypes along the inferred axis of variation, with higher absolute value indicating a stronger effect.  
+Note that the interpretation of MOFA factors is analogous to the interpretation of the principal components in PCA.
 
 ```{r}
 plot_factor(MOFAobject, 
   factors = 1, 
-  color_by = "Factor1"
+  color_by = "SEPT10"
 )
 ```
 
@@ -423,7 +426,7 @@ plot_data_scatter(MOFAobject,
   view = "mRNA",
   factor = 1,  
   features = 4,
-  sign = "positive",
+  sign = "negative",
   color_by = "IGHV"
 ) + labs(y="RNA expression")
 ```
@@ -479,7 +482,6 @@ Hints:
 Try a similar pipeline as for Factor 1 and answer the following questions:
 - Which mutation underlies Factor 3?
 - Can you identify mRNA markers?
-- Can you explore the methylation signal for this Factor?
 - Do a (small) bibliographical search to check if your predictions make sense
 
 # Inspection of combinations of Factors
