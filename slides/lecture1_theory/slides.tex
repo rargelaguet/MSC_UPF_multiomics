@@ -123,12 +123,20 @@
 	\includegraphics[height=5.5cm]{img/Sun2016_multiomics.png}
 	\end{frame}
 
+	\begin{frame}{Abstraction of a multi-omics experimental design}
+	\centering
+	\includegraphics[height=5.5cm]{img/matrices.png}
+	\end{frame}
+
 	\begin{frame}{Strategies for multi-omics data integration}
-	The first step is to choose the common coordinate framework for the integration:
-	\begin{itemize}
-		\item \textbf{Samples} as the common coordinate framework (\textit{matched} data sets).
-		\item \textbf{Features} as the common coordinate framework (\textit{unmatched} data sets).
-	\end{itemize}	
+	The first step is to choose the anchoring unit for the integration \\
+%	\begin{itemize}
+%		\item \textbf{Horizontal integration} features as the anchor
+%		\item \textbf{Vertical integration} samples as the anchor
+%	\end{itemize}	
+	\leavevmode\newline
+	\centering
+	\includegraphics[height=5.5cm]{img/anchor_overview.png}
 	\end{frame}
 
 	% \begin{frame}{Strategies for multi-omics data integration in \textit{matched} assays}
@@ -138,7 +146,7 @@
 	% \end{frame}
 
 	\begin{frame}{Strategies for multi-omics data integration}
-	Two general strategies for the analysis of \textit{matched} assays:
+	Two general strategies for vertical integration (multi-omics data derived from the same set of samples);
 	\begin{itemize}
 		\item \textbf{Local analysis}: test for marginal associations between features from different molecular layers. Generally supervised.
 		\item \textbf{Global analysis}: exploit the dependencies between the features to construct a mathematical representation of the data. Generally unsupervised.
@@ -158,7 +166,7 @@
 	\leavevmode\newline
 	\centering
 	\includegraphics[height=5.5cm]{img/gwas_eqtl.png}
-	\blfootnote{GWAS: Genome-Wide Association Study (GWAS)\\eQTL: expression Quantiative Trait Loci\\Slide by Anna Cuomo}
+	\blfootnote{GWAS: Genome-Wide Association Study (GWAS)\\eQTL: expression Quantiative Trait Loci}
 	\end{frame}
 
 	\begin{frame}{Local analysis}
@@ -176,13 +184,6 @@
 	\includegraphics[height=4.5cm]{img/Ritchie2015_global_analysis.png}
 	\end{frame}
 
-
-	\begin{frame}{Global analysis}
-	\leavevmode\newline
-	\centering
-	\includegraphics[height=6cm]{img/george_box_model.png}
-	\end{frame}
-
 	\begin{frame}{Global analysis}
 	Challenges in (global) multi-omics data integration:
 	\begin{itemize}
@@ -194,13 +195,8 @@
 	\end{itemize}
 	\end{frame}
 
-	% \begin{frame}{Latent variable models}
-	% A key principle of biological data is that variation between the features is coordinated and results from the existence of underlying biological processes (for example gene regulatory networks). This key assumption sets off an entire statistical framework of exploiting the redundancy encoded in the data set to infer a meaningful low-dimensional repesentation of the data that captures as much signal as possible from the input data.
-	% % Latent variable models (LVMs) are arguably the most successful approaches for biological data analysis.
-	% \end{frame}
-
 	\begin{frame}{Latent variable models}
-	Given a dataset $\mathbf{Y}$ of $N$ samples and $D$ features, latent variable models exploit the dependencies between the features to reduce the dimensionality of the data to a small set of $K$ latent variables. The mapping from the high-dimensional to the low-dimensional space is performed via a function $f(\bfY|\bTheta)$:\\
+	Given a dataset $\mathbf{Y}$ of $N$ samples and $D$ features, latent variable models exploit the dependencies between the features to reduce the dimensionality of the data. The mapping from the high-dimensional to the low-dimensional space is performed via a function $f(\bfY|\bTheta)$:\\
 	\leavevmode\newline
 	\centering
 	\includegraphics[height=4cm]{img/latent_variable_models.png}
@@ -334,43 +330,8 @@
 	\leavevmode\newline
 	\centering
 	\includegraphics[height=4cm]{img/scree_plot.png}
-	\blfootnote{Figure by Alex Williams} %http://alexhwilliams.info/itsneuronalblog/2016/03/27/pca/
+	%\blfootnote{Figure by Alex Williams} %http://alexhwilliams.info/itsneuronalblog/2016/03/27/pca/
 	\end{frame}
-
-	% \begin{frame}{Why is the weight/loading matrix $\bfW$ called the rotation matrix?}
-	% The eigendecomposition of the covariance matrix has two components scaling (defined by the eigenvalues) and rotation (defined by the eigenvectors). The eigenvectors are orthonormal matrices that perform a rotation on the high-dimensional space to align (i.e. rotate!) the data onto the principal components. They do not perform any scaling per se, and hence this is equivalent to a rotation matrix.
-	% \blfootnote{https://towardsdatascience.com/visualizing-principal-component-analysis-with-matrix-transforms-d17dabc8230e}
-	% \end{frame}
-
-
-	% \begin{frame}{Mathematical derivation of PCA: minimum error formulation}
-	% In the minimum error formulation, the aim is to infer an orthonormal projection of the data onto a low-dimensional space such that it minimises the mean squared error between the observations and the reconstructed data using $K$ latent variables (i.e. principal components):
-	% \[
-	% 	\argmax_{\|\bfw\|=1} \Vert \bfY - \sum_{k=1}^{K} (\bfz_k \bfw_k^T) \Vert^{2}
-	% \]
-	% where $\Vert \cdot \Vert^{2}$ is the Frobenius norm.\\
-	% Using $\bfz_k$ The eqiation can be rewritten as:
-	% \[
-	% 	\argmax_{\|\bfw\|=1} \Vert \bfY - \sum_{k=1}^{K} (\bfz_k \bfw_k^T) \Vert^{2}
-	% \]
-
-	% The optimisation problem can be solved by introducing a Lagrange multiplier $\lambda$ to enforce the constraint:
-	% \[
-	% 	\Vert \bfY - \sum_{k=1}^{K} (\bfz_k \bfw_k^T) \Vert^{2} + \lambda (1-)
-	% \]
-	% \end{frame}
-
-	% In both cases, solving the optimisation problems via Lagrange multipliers leads, remarkably, to the same solution:
-	% \[
-	% 	\bfS \bfw_k = \lambda_k \bfw_k
-	% \]
-	% Hence, the weight vectors $\bfw_k$ are the eigenvectors of $\bfS$, which can be computed via singular value decomposition \cite{Bishop2006}.
-
-	% \begin{frame}{Why do the two PCA formulations lead to the same answer?}
-	% The reason why the maximum variance solution and the minimum reconstruction error solution are the same can be understood by applying Pythagoras theorem to the right triangle defined by the projection of a sample $\bfy_{n}$ to a weight vector $\bfw$.\\
-	% Assuming again centered data, the variance of $\bfy_{n}$ is $\|\bfy_{n}\| = \bfy_{n}^T \bfy_{n}$. This variance decomposes as the sum of the variance in the latent space $\|\bfz_{n}\| = \bfz_{n}^T \bfz_{n}$ and the residual variance after reconstruction $\|\bfy_{n} - \bfz_{n} \bfw^T \|$:
-	% \includegraphics[height=5cm]{img/pca2}
-	% \end{frame}
 
 	\begin{frame}{Problems of using PCA for multi-omics data integration}
 	PCA is a great exploratory tool for single multivariate data sets, but it has important pitfalls in the analysis of multi-omics data:
@@ -378,36 +339,7 @@
 		\item Does not generalise to an arbitrary number of data modalities.
 		\item No natural way to combine different data modalities (binary data with continuous data).
 		\item Cannot handle missing values.
-		% \item Non-sparse loadings: challenges in interpretability and risk of overfitting.
 	\end{itemize}
-	\end{frame}
-
-	\begin{frame}{Probabilistic PCA and Factor analysis}
-	PCA is a purely algebraic method to summarise the data. It makes no assumptions regarding the data generation processes and no uncertainity quantification.\\
-	Factor analysis is a probabilistic generalisation of PCA:
-	\[
-		\bfY = \bfW \bfZ + \bepsilon
-	\]
-	where the weights $\bfW \in \R^{D \times K}$ are assumed to be non-probabilistic parameters, but the noise $\epsilon \in \R^{1 \times 1}$ and the latent variables $\bfZ \in \R^{N \times K}$ are normally-distributed random variables:
-	\begin{align*}
-		p(\bfZ) &= \prod_{n=1}^{N} \prod_{k=1}^{K} \Ndist{z_{nk}}{0,1} \\
-		\\
-		p(\epsilon) &= \Ndist {\epsilon}{0,\sigma^{2}}
-	\end{align*}
-	\end{frame}
-
-	\begin{frame}{Factor analysis}
-	All together, this leads to a normal distributed for the observations:
-	\[
-		p(\bfY|\bfW,\bfZ,\sigma) = \prod_{n=1}^{N} \prod_{d=1}^{D} \Ndist{y_{n,d}}{\bfw_{k}^T \bfz_{n},\sigma^2}
-	\]
-	This is called the likelihood and it corresponds to the objective function that needs to be maximised when training the model.
-	\end{frame}
-
-	\begin{frame}{Graphical model for factor analysis}
-	\centering
-	\includegraphics[height=6.5cm]{img/graphical_model_pca.png}
-	\blfootnote{N: number of samples\\D: number of features\\K: number of latent variables}
 	\end{frame}
 
 
@@ -425,44 +357,8 @@
 	% (Q) What are the limitation of CCA?
 	\end{frame}
 
-	\begin{frame}{Probabilistic canonical correlation analysis}
-	CCA can also be formulated as a probabilistic generative model \footcite{Bach2005}. The two matrix of observations $\bfY^{1}$ and $\bfY^{2}$ are decomposed in terms of two weight matrices $\bfW^{1}$ and $\bfW^{2}$ but a joint latent matrix $\bfZ$:
-	\begin{align*}
-		\bfY^{1} = \bfW^{1} \bfZ + \epsilon^{1} \qquad 
-		\bfY^{2} = \bfW^{2} \bfZ + \epsilon^{2}
-	\end{align*}
-	The weights are assumed to be non-probabilistic parameters. We specify the following probability distributions for the latent variables:
-	\begin{align*}
-		p(z_{nk}) &= \Ndist{z_{nk}}{0,1}
-	\end{align*}
-	The noise for each data modality is also defined as a normal distribution:
-	\begin{align*}
-		p(\epsilon^{1}) = \Ndist{\epsilon^{1}}{0,\sigma_{1}^2} \qquad 
-		p(\epsilon^{2}) = \Ndist{\epsilon^{2}}{0,\sigma_{2}^2}
-	\end{align*}
-	\end{frame}
-
-	\begin{frame}
-	All together, this yields the following likelihood function:
-	\[
-		p(\bfY|\bfW,\bfZ,\tau) = \prod_{m=1}^{M=2} \prod_{n=1}^{N} \prod_{d=1}^{D_1} \Ndist{y^{m}_{n,d}}{(\bfw_{k}^{m})^T \bfz_{n},\sigma_{m}^2}
-	\]
-	This will correspond to the objective function that needs to be maximised when training the model.
-	\end{frame}
-
-	\begin{frame}{Graphical model for canonical correlation analysis}
-	\centering
-	\includegraphics[height=6cm]{img/graphical_model_cca.png}
-	\end{frame}
-
-
-	% \begin{frame}
-
-	% No, this is
-	
-	% \end{frame}
-	\begin{frame}[allowframebreaks]{References}
-  	\printbibliography[heading=none]
-	\end{frame}
+%	\begin{frame}[allowframebreaks]{References}
+%  	\printbibliography[heading=none]
+%	\end{frame}
 
 \end{document}
