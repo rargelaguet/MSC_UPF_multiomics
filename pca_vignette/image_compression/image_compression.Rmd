@@ -10,7 +10,7 @@ output:
     toc: false
 ---
 
-In this vignette we will demonstrate how PCA can be used for data compression in the field of image processing. We will use the [famous picture of Lena Forsen](https://en.wikipedia.org/wiki/Lenna).
+In this vignette we will demonstrate how PCA can be used for data compression in the field of image processing. We will use the [photo of Lena Forsen](https://en.wikipedia.org/wiki/Lenna).
 
 # Load the libraries
 
@@ -20,6 +20,7 @@ library(grid)
 library(png)
 ```
 
+Change the working directory
 ```{r}
 setwd("/Users/ricard/Google\ Drive/Teaching/Data_integration_UPF_June2020/pca_vignette/image_compression/")
 ```

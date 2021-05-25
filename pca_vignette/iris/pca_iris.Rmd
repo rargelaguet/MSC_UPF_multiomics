@@ -11,7 +11,7 @@ output:
     toc_depth: 2
 ---
 
-# Load the data
+# Load libraries
 
 ```{r, message = FALSE}
 library(ggplot2)
@@ -19,7 +19,9 @@ library(tidyverse)
 library(ggpubr)
 ```
 
+# Load the data
 
+the `iris` data set is one of the most popular for the study of machine learning techniques. Read more about it [here](https://www.kaggle.com/uciml/iris)
 ```{r}
 data(iris)
 head(iris)
@@ -56,7 +58,6 @@ PCs <- Y %*% eigenvectors
 head(PCs)
 ```
 
-**(Q) How to interpret the Principal Components?**  
 Each Principal Component (PC) corresponds to an orthogonal axis of variation. Each PC is made up by a linear combination of the input features, where the linear coeficients are given by the feature weights. Each PC ordinates the samples along a one-dimensional axis centered at zero:
 ```{r}
 df <- as.data.frame(PCs) %>% 
@@ -71,7 +72,7 @@ ggscatter(df, x="PC1", y="PC2", fill="species", shape=21 ,size=3) +
   )
 ```
 
-# Compare our manual PCA to the standard `prcomp` 
+# Compare our manual PCA to the standard `prcomp` function
 
 The standard way to perform Principal Component Analysis in R is to use the `prcomp` function. The underlying algorithm is slightly different (i.e. more numerically stable) than the eigenvector decomposition.
 
@@ -98,7 +99,7 @@ head(prcomp.pca$x)
 prcomp.pca$sdev[1:2]
 ```
 
-<!-- Rotate PCs for visualisation (ignore this) -->
+Rotate PCs for visualisation (ignore this)
 ```{r echo=FALSE}
 prcomp.pca$x[,2] <- -(prcomp.pca$x[,2])
 prcomp.pca$rotation[,2] <- -(prcomp.pca$rotation[,2])
@@ -155,4 +156,4 @@ ggscatter(to.plot, x="pc_value", y="sepal_length", facet="PC", scales="free",
 # Questions
 
 - **(Q) Why are the feature means not important when doing PCA (i.e. why is the data centered)?**  
-- **(Q) Does the PCA solution change if you scale the features with `scale(center=TRUE, scale=TRUE)`?**
+- **(Q) Does the PCA solution change if you scale the features with `scale(center=TRUE, scale=TRUE)`? If so, why? When would you apply scaling to your data?**

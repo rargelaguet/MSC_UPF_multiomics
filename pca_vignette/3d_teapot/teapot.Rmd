@@ -1,7 +1,13 @@
 ---
 title: "Principal Component Analysis: Tea Pot example"
-author: "Ricard Argelaguet"
+author: 
+  name: "Ricard Argelaguet"
+  affiliation: "European Bioinformatics Institute, Cambridge, UK"
+  email: "ricard@ebi.ac.uk"
 date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+    toc: false
 ---
 
 Data downloaded from https://www.khanacademy.org/computer-programming/3d-teapot/971436783
